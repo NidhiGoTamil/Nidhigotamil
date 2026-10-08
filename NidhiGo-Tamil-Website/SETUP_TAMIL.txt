@@ -1,0 +1,56 @@
+NIDHIGO TAMIL — UPDATED SOURCE CODE SETUP
+===========================================
+Version: 2026-10-08 — CLEAN HOMEPAGE
+
+WHAT CHANGED
+- Homepage: website banner + six centered category cards ONLY.
+- Removed homepage Apply Now CTA, feature strip, featured products, social footer.
+- Removed Apply Now from hamburger menu. About, Disclaimer, Terms remain inside menu.
+- Individual product detail page still has enquiry link and external affiliate CTA.
+- Six original user-reference category icon PNGs are bundled in public/assets/ as temporary placeholders.
+- Banner and logo can be uploaded/replaced later from the authenticated Admin Dashboard.
+
+DEMO PREVIEW
+Open preview.html in your browser. This is a standalone interactive sample, not a full backend.
+
+GITHUB
+1. Extract this entire ZIP. Do not upload the .zip itself as a GitHub project file.
+2. Create a new repository (for example: NidhiGoTamil/nidhigo-tamil).
+3. From the extracted project directory:
+   git init
+   git add .
+   git commit -m "NidhiGo Tamil clean homepage and admin dashboard"
+   git branch -M main
+   git remote add origin https://github.com/NidhiGoTamil/nidhigo-tamil.git
+   git push -u origin main
+
+SUPABASE
+1. Create/choose the Supabase project using your approved organization and plan.
+2. Run supabase/migrations/001_nidhigo.sql in Supabase SQL Editor.
+3. Under Authentication create an administrator user; insert their UUID in public.admin_users.
+   Example SQL:
+   insert into public.admin_users(user_id) values ('YOUR-ADMIN-USER-UUID');
+4. Obtain project URL, publishable/anon key, service-role secret.
+
+VERCEL
+1. Import the GitHub repo into Vercel. Framework: Next.js.
+2. Configure environment variables:
+   NEXT_PUBLIC_SUPABASE_URL
+   NEXT_PUBLIC_SUPABASE_ANON_KEY
+   SUPABASE_SERVICE_ROLE_KEY (SERVER-ONLY, secret)
+   NEXT_PUBLIC_SITE_URL=https://nidhigo.com
+3. Deploy, test the website and admin before linking the custom domain.
+
+LOCAL RUN
+Copy .env.example to .env.local and populate credentials, then:
+   npm install
+   npm run build
+   npm run dev
+
+IMPORTANT
+- This ZIP is source code and a demo, not a live production deployment.
+- Keep service role secrets out of GitHub and client-side public variables.
+- Customer applications will not save until Supabase is configured and the website is deployed.
+- Do not collect personal leads until your privacy notice, consent, retention, contact details,
+  abuse protection and financial disclosures are finalized.
+- The uploaded logo/banner and real offers/affiliate URLs are still pending your input.
