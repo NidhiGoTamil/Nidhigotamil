@@ -28,17 +28,17 @@ export default function HomeFooter({ settings }: { settings: HomeSettings }) {
       <div className="grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-[1.15fr_1.15fr_0.8fr] sm:items-start sm:gap-8">
         <div className="col-span-2 sm:col-span-1">
           <Link href="/" className="inline-block text-xl font-black tracking-tight text-white sm:text-2xl" aria-label="NidhiGo Tamil home">NidhiGo Tamil</Link>
-          <p className="mt-1.5 max-w-sm text-[11px] leading-5 text-emerald-50/85 sm:text-xs">Explore Financial Products and Information in One Place.</p>
-          <p className="mt-1 max-w-sm text-[10px] leading-4 text-emerald-100/65 sm:text-[11px]">Independent information and affiliate website. Not a bank or lender.</p>
+          <p className="mt-1.5 max-w-sm text-[13px] font-medium leading-6 text-emerald-50/90 sm:text-sm">Explore Financial Products and Information in One Place.</p>
+          <p className="mt-1 max-w-sm text-xs font-medium leading-5 text-emerald-100/75">Independent information and affiliate website. Not a bank or lender.</p>
         </div>
         <nav aria-label="Footer quick links">
-          <h2 className="text-xs font-bold text-white sm:text-sm">Quick Links</h2>
+          <h2 className="text-sm font-extrabold text-white sm:text-base">Quick Links</h2>
           <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-2">
-            {links.map(l=><Link key={l.href} href={l.href} className="text-[11px] leading-4 text-emerald-50/85 transition hover:text-white sm:text-xs">{l.label}</Link>)}
+            {links.map(l=><Link key={l.href} href={l.href} className="text-[13px] font-semibold leading-5 text-emerald-50/90 transition hover:text-white sm:text-sm">{l.label}</Link>)}
           </div>
         </nav>
         <div>
-          <h2 className="text-xs font-bold text-white sm:text-sm">Follow Us</h2>
+          <h2 className="text-sm font-extrabold text-white sm:text-base">Follow Us</h2>
           <div className="mt-2 flex flex-wrap gap-2">
             {socialLinks.map(({label,url,Icon,color})=>url&&/^https:\/\//i.test(url)
               ?<a key={label} href={url} target="_blank" rel="noopener noreferrer" aria-label={label} className={`grid h-9 w-9 place-items-center rounded-full text-white transition hover:-translate-y-0.5 ${color}`}><Icon size={19}/></a>
@@ -46,7 +46,7 @@ export default function HomeFooter({ settings }: { settings: HomeSettings }) {
           </div>
         </div>
       </div>
-      <p className="mt-4 border-t border-white/15 pt-3 text-center text-[10px] text-emerald-50/70 sm:text-xs">© {new Date().getFullYear()} NidhiGo Tamil. All rights reserved.</p>
+      <p className="mt-4 border-t border-white/15 pt-3 text-center text-xs font-medium text-emerald-50/80 sm:text-sm">© {new Date().getFullYear()} NidhiGo Tamil. All rights reserved.</p>
     </div>
   </footer>;
 }
