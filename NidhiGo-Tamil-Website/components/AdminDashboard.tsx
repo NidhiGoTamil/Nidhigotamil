@@ -59,8 +59,9 @@ export default function AdminDashboard(){
    const short=offer.title.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,95).replace(/-$/g,"")||"new-product";
    const slug=editing?offer.slug:short+"-"+crypto.randomUUID().slice(0,8);
    const publish=Boolean(offer.affiliate_url?.trim());
-   const payload={...offer,slug,provider_name:offer.provider_name.trim()||offer.title.trim(),
-    highlight:"",benefits:[],documents:[],steps:[],is_demo:false,published:publish};
+   const payload={...offer,slug,provider_name:(offer.provider_name.trim()||offer.title.trim()).slice(0,120),
+    highlight:editing?offer.highlight:"",benefits:editing?offer.benefits:[],
+    documents:editing?offer.documents:[],steps:editing?offer.steps:[],is_demo:false,published:publish};
    const url=editing?"/api/admin/offers/"+editing:"/api/admin/offers";
    await request(url,{method:editing?"PUT":"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
    const selected=offer.category;
