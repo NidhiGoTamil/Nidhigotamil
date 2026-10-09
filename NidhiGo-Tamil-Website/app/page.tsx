@@ -45,9 +45,9 @@ export default async function Home() {
               <Link
                 href={`/category/${category.slug}`}
                 key={category.slug}
-                className={`group relative flex min-h-[158px] flex-col items-center justify-start rounded-[19px] border border-forest-700/10 bg-gradient-to-br px-2.5 pb-6 pt-4 text-center shadow-[0_6px_22px_rgba(7,88,63,.055)] transition-all duration-200 hover:-translate-y-0.5 hover:border-forest-500/25 hover:shadow-premium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest-700 sm:min-h-[150px] sm:flex-row sm:justify-start sm:gap-4 sm:rounded-[22px] sm:px-5 sm:py-5 sm:text-left ${category.accent || "from-emerald-50 to-teal-50"}`}
+                className={`group relative flex min-h-[174px] cursor-pointer flex-col items-center justify-center rounded-[19px] border border-forest-700/10 bg-gradient-to-br px-2.5 py-3 text-center shadow-[0_6px_22px_rgba(7,88,63,.055)] transition-all duration-200 hover:-translate-y-0.5 hover:border-forest-500/25 hover:shadow-premium active:scale-[.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest-700 sm:min-h-[150px] sm:flex-row sm:justify-start sm:gap-4 sm:rounded-[22px] sm:px-5 sm:py-5 sm:text-left ${category.accent || "from-emerald-50 to-teal-50"}`}
               >
-                <div className="mb-2 grid h-16 w-16 shrink-0 place-items-center rounded-[16px] bg-white/80 p-1.5 shadow-sm sm:mb-0 sm:h-20 sm:w-20">
+                <div className="mb-2 grid h-24 w-24 shrink-0 place-items-center rounded-[18px] bg-white/80 p-1 shadow-sm sm:mb-0 sm:h-28 sm:w-28">
                   {category.icon_url ? (
                     <img src={category.icon_url} alt="" className="h-full w-full object-contain" />
                   ) : (
@@ -58,9 +58,6 @@ export default async function Home() {
                   <h3 className="text-[13px] font-extrabold leading-5 text-[#102741] sm:text-lg">{category.title}</h3>
                   <p className="mt-1 text-[10px] leading-[15px] text-slate-600 sm:text-xs sm:leading-5">{category.description}</p>
                 </div>
-                <span className="absolute bottom-2.5 right-2.5 inline-flex h-6 items-center justify-center rounded-full bg-forest-600 px-3 text-white transition-transform group-hover:translate-x-0.5 sm:static sm:h-8 sm:shrink-0" aria-hidden="true">
-                  <span className="text-[10px] font-extrabold tracking-wide sm:text-xs">VISIT</span>
-                </span>
               </Link>
             ))}
           </div>
