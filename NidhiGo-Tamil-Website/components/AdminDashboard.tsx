@@ -78,8 +78,88 @@ export default function AdminDashboard(){
  <section className="min-w-0">{error&&<p className="mb-4 rounded-xl bg-red-50 p-4 text-sm text-red-700" role="alert">{error}</p>}{notice&&<p className="mb-4 rounded-xl bg-forest-50 p-4 text-sm text-forest-700" role="status">{notice}</p>}
  {tab==="dashboard"&&<><h2 className="mb-4 text-xl font-black">Overview</h2><div className="mb-5 grid grid-cols-2 gap-4 sm:grid-cols-3"><div className="card p-5"><p className="text-sm text-slate-500">Total Applications</p><b className="mt-2 block text-3xl text-forest-900">{stats?.total??"…"}</b></div><div className="card p-5"><p className="text-sm text-slate-500">Today (IST)</p><b className="mt-2 block text-3xl text-forest-900">{stats?.today??"…"}</b></div></div><h3 className="mb-4 text-lg font-black">Applications by Category</h3><div className="grid grid-cols-2 gap-3 lg:grid-cols-3">{categories.map(c=><button key={c.slug} onClick={()=>{setCategory(c.slug);setPage(1);changeTab("applications")}} className="card p-5 text-left transition hover:border-forest-300 hover:shadow-premium"><span className="text-3xl">{c.emoji}</span><p className="mt-3 font-bold">{c.title}</p><b className="text-2xl text-forest-600">{stats?.categories?.find((s:any)=>s.slug===c.slug)?.count??"…"}</b></button>)}</div></>}
  {tab==="applications"&&<><div className="mb-4 flex justify-between gap-3"><h2 className="text-xl font-black">Applications <span className="text-base font-medium text-slate-400">({count})</span></h2></div>{FilterBar()}<div className="card overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead className="bg-forest-50 text-xs uppercase tracking-wider text-forest-800"><tr>{["Date (IST)","Applicant","Phone","Category","Purpose","Status / Notes"].map(c=><th className="px-4 py-3" key={c}>{c}</th>)}</tr></thead><tbody className="divide-y divide-gray-100">{leads.map(a=><tr key={a.id} className="align-top"><td className="whitespace-nowrap px-4 py-4 text-xs">{new Date(a.created_at).toLocaleString("en-IN",{timeZone:"Asia/Kolkata"})}</td><td className="px-4 py-4"><b>{a.full_name}</b><p className="mt-1 text-xs text-slate-500">{a.email}</p></td><td className="px-4 py-4">{a.phone}</td><td className="px-4 py-4">{categories.find(c=>c.slug===a.category)?.title||a.category}</td><td className="max-w-52 px-4 py-4 text-xs">{a.purpose}<p className="mt-2 text-slate-500">{a.message}</p></td><td className="px-4 py-4"><select value={a.status} className="form-input !py-1" onChange={e=>updateLead(a.id,e.target.value,a.admin_notes)}><option value="new">New</option><option value="contacted">Contacted</option><option value="closed">Closed</option></select><textarea aria-label="Admin notes" defaultValue={a.admin_notes} onBlur={e=>{if(e.target.value!==a.admin_notes)updateLead(a.id,a.status,e.target.value)}} placeholder="Admin notes" className="form-input mt-2 !py-2" rows={2}/></td></tr>)}{leads.length===0&&<tr><td colSpan={6} className="p-10 text-center text-slate-500">No applications for this filter.</td></tr>}</tbody></table></div><div className="mt-4 flex items-center justify-end gap-3"><button disabled={page===1} onClick={()=>setPage(page-1)} className="btn-outline !py-2">Previous</button><span className="text-xs">Page {page}</span><button disabled={page*50>=count} onClick={()=>setPage(page+1)} className="btn-outline !py-2">Next</button></div></>}
- {tab==="offers"&&<><h2 className="mb-4 text-xl font-black">{editing?"Edit Product":"Add New Product"}</h2><form onSubmit={saveOffer} className="card grid gap-4 p-5 sm:grid-cols-2 sm:p-6"><label><span className="field-label">Category *</span><select required className="form-input" value={offer.category} onChange={e=>setOffer({...offer,category:e.target.value})}>{categories.map(c=><option value={c.slug} key={c.slug}>{c.title}</option>)}</select></label><label><span className="field-label">URL Slug *</span><input required className="form-input" value={offer.slug} onChange={e=>setOffer({...offer,slug:e.target.value})} placeholder="bank-digital-account"/></label><label><span className="field-label">Product Name *</span><input required className="form-input" value={offer.title} onChange={e=>setOffer({...offer,title:e.target.value})}/></label><label><span className="field-label">Bank / Provider Name</span><input className="form-input" value={offer.provider_name} onChange={e=>setOffer({...offer,provider_name:e.target.value})}/></label><label className="sm:col-span-2"><span className="field-label">Product Description</span><textarea className="form-input" rows={3} value={offer.description} onChange={e=>setOffer({...offer,description:e.target.value})}/></label><label><span className="field-label">Offer Highlight / Cashback (verified information only)</span><input className="form-input" value={offer.highlight} onChange={e=>setOffer({...offer,highlight:e.target.value})}/></label><label><span className="field-label">Product Logo (upload PNG/JPG/WebP)</span><input type="file" accept="image/png,image/jpeg,image/webp" className="form-input" onChange={e=>uploadImage(e.target.files?.[0],url=>setOffer(current=>({...current,logo_url:url})))}/></label><label className="sm:col-span-2"><span className="field-label">Logo URL (or uploaded image)</span><input className="form-input" value={offer.logo_url??""} onChange={e=>setOffer({...offer,logo_url:e.target.value})}/></label><MultiList label="Benefits" value={offer.benefits} onChange={v=>setOffer({...offer,benefits:v})}/><MultiList label="Documents Required" value={offer.documents} onChange={v=>setOffer({...offer,documents:v})}/><MultiList label="Steps / Procedure" value={offer.steps} onChange={v=>setOffer({...offer,steps:v})}/><label><span className="field-label">YouTube Tutorial Link</span><input className="form-input" type="url" value={offer.tutorial_url??""} onChange={e=>setOffer({...offer,tutorial_url:e.target.value})} placeholder="https://www.youtube.com/watch?v=..."/></label><label><span className="field-label">Affiliate Application Link</span><input className="form-input" type="url" value={offer.affiliate_url??""} onChange={e=>setOffer({...offer,affiliate_url:e.target.value})} placeholder="https://..."/></label><div className="sm:col-span-2 flex flex-wrap gap-5"><label className="flex items-center gap-2 text-sm font-bold"><input type="checkbox" checked={offer.published} onChange={e=>setOffer({...offer,published:e.target.checked})}/>Published</label><label className="flex items-center gap-2 text-sm font-bold"><input type="checkbox" checked={offer.is_demo} onChange={e=>setOffer({...offer,is_demo:e.target.checked})}/>Demo Product</label></div><div className="sm:col-span-2 flex gap-3"><button disabled={busy} className="btn-primary">{busy?"Saving…":editing?"Save Changes":"Add Offer"}</button>{editing&&<button type="button" className="btn-outline" onClick={()=>{setEditing(null);setOffer(emptyOffer)}}>Cancel Edit</button>}</div></form>
- <h3 className="mb-3 mt-8 text-lg font-black">Existing Products ({offers.length})</h3><div className="space-y-3">{offers.map(p=><div key={p.id} className="card flex flex-wrap items-center justify-between gap-3 p-4"><div><p className="font-bold">{p.title} {p.is_demo&&<span className="text-xs text-amber-600">(Demo)</span>}</p><p className="mt-1 text-xs text-slate-500">{p.provider_name} • {p.category} • {p.published?"Published":"Unpublished"}</p></div><div className="flex gap-2"><button onClick={()=>editOffer(p)} className="btn-outline !px-3 !py-2 text-xs"><Edit size={15}/>Edit</button><button onClick={()=>unpublish(p)} className="btn-outline !px-3 !py-2 text-xs">Unpublish</button></div></div>)}</div></>}
+ {tab==="offers"&&<>
+  <h2 className="mb-4 text-xl font-black text-forest-900">Manage Products</h2>
+  <div className="card mb-5 p-4 sm:p-5">
+    <p className="mb-3 text-sm font-bold text-forest-900">Select a Category</p>
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+     {categories.map(c=><button type="button" key={c.slug}
+       onClick={()=>{setOffer({...emptyOffer,category:c.slug});setEditing(null);setError("");setNotice("")}}
+       className={"flex items-center gap-2 rounded-xl border px-3 py-3 text-left text-xs font-bold transition sm:text-sm "+(offer.category===c.slug?"border-forest-700 bg-forest-700 text-white":"border-emerald-100 bg-forest-50 text-forest-800 hover:bg-emerald-100")}>
+       <span className="text-xl">{c.emoji}</span><span>{c.title}</span>
+     </button>)}
+    </div>
+  </div>
+  <h3 className="mb-3 text-lg font-black text-forest-900">{editing?"Edit Product":"Add New Product"} — {selectedCategoryTitle}</h3>
+  <form onSubmit={saveOffer} className="card grid gap-4 p-5 sm:grid-cols-2 sm:p-6">
+    <label className="sm:col-span-2">
+      <span className="field-label">Product Logo (PNG / JPG / WebP)</span>
+      <input type="file" accept="image/png,image/jpeg,image/webp" className="form-input" disabled={Boolean(uploading)}
+        onChange={e=>uploadImage(e.target.files?.[0],url=>setOffer(old=>({...old,logo_url:url})))}/>
+      {offer.logo_url&&<div className="mt-3 flex items-center gap-3 rounded-xl border border-emerald-100 bg-slate-50 p-3">
+        <img src={offer.logo_url} alt="Product logo preview" className="h-16 w-16 rounded-xl bg-white object-contain p-1"/>
+        <span className="text-xs text-slate-600">Current product logo</span>
+        <button type="button" className="ml-auto text-xs font-bold text-red-600" onClick={()=>setOffer(old=>({...old,logo_url:""}))}>Remove Logo</button>
+      </div>}
+    </label>
+    <label className="sm:col-span-2">
+      <span className="field-label">Product Name / Title *</span>
+      <input required maxLength={180} className="form-input" value={offer.title}
+        onChange={e=>setOffer(old=>({...old,title:e.target.value}))}
+        placeholder="e.g. HDFC Bank Credit Card"/>
+    </label>
+    <label className="sm:col-span-2">
+      <span className="field-label">Product Details *</span>
+      <textarea required maxLength={2500} className="form-input min-h-36" rows={6}
+        value={offer.description} onChange={e=>setOffer(old=>({...old,description:e.target.value}))}
+        placeholder="Enter product details, important benefits, eligibility and other information here."/>
+    </label>
+    <label className="sm:col-span-2">
+      <span className="field-label">YouTube Video Link (optional)</span>
+      <input type="url" className="form-input" value={offer.tutorial_url??""}
+        onChange={e=>setOffer(old=>({...old,tutorial_url:e.target.value}))}
+        placeholder="https://www.youtube.com/watch?v=..."/>
+    </label>
+    {videoPreview&&<div className="sm:col-span-2">
+      <p className="mb-2 text-sm font-bold text-forest-900">YouTube Video Preview</p>
+      <div className="aspect-video max-w-xl overflow-hidden rounded-2xl bg-black">
+        <iframe src={videoPreview} className="h-full w-full" title="YouTube tutorial preview"
+          allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
+          referrerPolicy="strict-origin-when-cross-origin" loading="lazy" allowFullScreen/>
+      </div>
+    </div>}
+    {offer.tutorial_url&&!videoPreview&&<p className="sm:col-span-2 text-xs text-amber-700">Enter a valid YouTube video, Shorts or youtu.be link to show its preview.</p>}
+    <label className="sm:col-span-2">
+      <span className="field-label">Apply Now Link</span>
+      <input type="url" className="form-input" value={offer.affiliate_url??""}
+        onChange={e=>setOffer(old=>({...old,affiliate_url:e.target.value}))}
+        placeholder="https://..."/>
+      <span className="mt-2 block text-xs text-slate-500">Products are published when a valid Apply Link is saved. Without an Apply Link they stay unpublished.</span>
+    </label>
+    <div className="flex flex-wrap gap-3 sm:col-span-2">
+      <button type="submit" className="btn-primary" disabled={busy||Boolean(uploading)}>
+        {busy?"Saving...":editing?"Save Product Changes":"Save Product"}
+      </button>
+      {editing&&<button type="button" className="btn-outline"
+        onClick={()=>{setEditing(null);setOffer({...emptyOffer,category:offer.category})}}>Cancel Edit</button>}
+    </div>
+  </form>
+  <h3 className="mb-3 mt-7 text-lg font-black text-forest-900">{selectedCategoryTitle} Products ({offers.filter(p=>p.category===offer.category).length})</h3>
+  <div className="space-y-3">
+    {offers.filter(p=>p.category===offer.category).map(p=><div key={p.id} className="card flex flex-wrap items-center justify-between gap-3 p-4">
+      <div className="flex min-w-0 items-center gap-3">
+        {p.logo_url&&<img src={p.logo_url} alt="" className="h-11 w-11 shrink-0 rounded-lg bg-white object-contain"/>}
+        <div className="min-w-0"><p className="font-bold text-forest-900">{p.title}</p>
+          <p className="mt-1 text-xs text-slate-500">{p.published?"Published":"Unpublished"}</p></div>
+      </div>
+      <div className="flex gap-2">
+        <button type="button" onClick={()=>editOffer(p)} className="btn-outline !px-3 !py-2 text-xs"><Edit size={15}/>Edit</button>
+        {p.published&&<button type="button" onClick={()=>unpublish(p)} className="btn-outline !px-3 !py-2 text-xs">Unpublish</button>}
+      </div>
+    </div>)}
+    {offers.filter(p=>p.category===offer.category).length===0&&<div className="card p-6 text-center text-sm text-slate-500">No products in this category yet. Add your first product above.</div>}
+  </div>
+ </>}
  {tab==="scanner"&&<PhotoScanner onSaveDraft={saveScannedCategoryItem}/>}
  {tab==="settings"&&<><h2 className="mb-4 text-xl font-black">Website Appearance & Links</h2><form onSubmit={saveSettings} className="card grid gap-4 p-5 sm:grid-cols-2 sm:p-6"><label><span className="field-label">Upload Website Logo</span><input type="file" accept="image/png,image/jpeg,image/webp" className="form-input" onChange={e=>uploadImage(e.target.files?.[0],url=>setSettings(old=>({...old,logo_url:url})))}/></label><label><span className="field-label">Upload Homepage Banner</span><input type="file" accept="image/png,image/jpeg,image/webp" className="form-input" onChange={e=>uploadImage(e.target.files?.[0],url=>setSettings(old=>({...old,banner_url:url})))}/></label>{(["logo_url","banner_url","headline","subheadline","youtube_url","telegram_url","instagram_url","x_url"] as (keyof SettingsData)[]).map(k=><label key={k} className={k==="banner_url"?"sm:col-span-2":""}><span className="field-label">{k.replace(/_/g," ")}</span><input className="form-input" value={settings[k]??""} onChange={e=>setSettings({...settings,[k]:e.target.value})}/></label>)}<p className="sm:col-span-2 text-xs text-slate-500">Wide banner images are displayed at full width with their original ratio: no cropping or stretching. Upload the final logo and PNGs after review.</p><button disabled={busy} className="btn-primary sm:col-span-2">Save Website Settings</button></form>
  <h3 className="mb-3 mt-8 text-lg font-black">Six Category Icons</h3><div className="grid grid-cols-2 gap-3 lg:grid-cols-3">{categories.map(c=><div key={c.slug} className="card p-4"><p className="font-bold">{c.emoji} {c.title}</p><label className="mt-3 block text-xs text-slate-600">Upload transparent PNG<input type="file" accept="image/png,image/jpeg,image/webp" className="mt-2 block w-full text-xs" onChange={e=>uploadImage(e.target.files?.[0],async url=>{await request("/api/admin/categories",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({slug:c.slug,icon_url:url})})})}/></label></div>)}</div></>}
