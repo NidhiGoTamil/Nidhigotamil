@@ -47,7 +47,7 @@ export default async function Home(){
        </div>
        <div className="min-w-0 flex-1">
         <h3 className={`text-[17px] font-black leading-tight tracking-tight sm:text-[23px] ${theme.accent}`}>{category.title}</h3>
-        <p className="mt-1 text-[12px] font-bold leading-[1.4] text-slate-800 sm:text-[14px]">{category.description}</p>
+        <p className="mt-1 text-[12px] font-bold leading-[1.4] text-slate-800 sm:text-[14px]">{category.slug==="loan"?"Personal Loan • Home Loan • Business Loan":category.description}</p>
         {theme.chips.length>0&&<div className="mt-2 hidden flex-wrap gap-1 sm:flex">
          {theme.chips.map(chip=><span key={chip} className="rounded-full border border-black/5 bg-white/60 px-2 py-0.5 text-[10px] font-bold text-slate-700">{chip}</span>)}
         </div>}
