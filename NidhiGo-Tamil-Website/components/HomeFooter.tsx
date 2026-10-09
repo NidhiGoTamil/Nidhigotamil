@@ -25,8 +25,8 @@ export default function HomeFooter({ settings }: { settings: HomeSettings }) {
 
   return <footer className="mt-5 border-t border-emerald-900/15 bg-[#062d35] text-white sm:mt-8" aria-label="NidhiGo Tamil website footer">
     <div className="mx-auto max-w-6xl px-4 pb-3 pt-5 sm:px-7 sm:pb-4 sm:pt-6">
-      <div className="grid gap-4 sm:grid-cols-[1.15fr_1.15fr_0.8fr] sm:items-start sm:gap-8">
-        <div>
+      <div className="grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-[1.15fr_1.15fr_0.8fr] sm:items-start sm:gap-8">
+        <div className="col-span-2 sm:col-span-1">
           <Link href="/" className="inline-block text-xl font-black tracking-tight text-white sm:text-2xl" aria-label="NidhiGo Tamil home">NidhiGo Tamil</Link>
           <p className="mt-1.5 max-w-sm text-[11px] leading-5 text-emerald-50/85 sm:text-xs">Explore Financial Products and Information in One Place.</p>
           <p className="mt-1 max-w-sm text-[10px] leading-4 text-emerald-100/65 sm:text-[11px]">Independent information and affiliate website. Not a bank or lender.</p>
