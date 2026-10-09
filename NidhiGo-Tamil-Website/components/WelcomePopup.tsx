@@ -25,7 +25,7 @@ export default function WelcomePopup({youtubeUrl,telegramUrl}:{youtubeUrl:string
  const skip=pathname.startsWith("/admin")||(!youtube&&!telegram);
 
  useEffect(()=>{
-  if(skip)return;
+  if(skip){setVisible(false);return;}
   try{if(window.sessionStorage.getItem("nidhigo-welcome-shown-v1")==="yes")return;}catch{}
   // Show only once per browsing session; don't interrupt the initial paint.
   const timer=window.setTimeout(()=>{
