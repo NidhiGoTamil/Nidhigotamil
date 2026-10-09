@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, DragEvent } from "react";
-import { Check, ClipboardCopy, ImagePlus, LoaderCircle, ScanLine, ShieldCheck, UploadCloud, Trash2 } from "lucide-react";
+import { Check, ClipboardCopy, ImagePlus, LoaderCircle, ScanLine, ShieldCheck, UploadCloud, Trash2, ZoomIn, ClipboardPaste } from "lucide-react";
 import { categories } from "@/lib/demo";
 import type { CategorySlug } from "@/lib/config";
 
@@ -68,52 +68,73 @@ function labelFor(category: CategorySlug | "", provider: string) {
   return provider ? provider + " " + label : label + " Offer";
 }
 
-/** OCR often splits a printed URL after ? or h=; join that URL, not arbitrary screenshot text. */
+/** Extract the complete visible URL, retaining the original case of query tokens. */
 export function extractApplyLink(ocrText: string): string {
-  const base = ocrText.replace(/[\u200b\u200e\u200f]/g, "").replace(/\r/g, "");
-  const m = /apply\s*(?:now|link)\s*:?\s*/i.exec(base);
-  const around = m ? base.slice(m.index + m[0].length, m.index + m[0].length + 440) : base;
-  const sources = [around, base];
-  const linkPattern = /(?:https?:\/\/)?(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}(?:\/[a-z0-9._~!$&'()*+,;=:@%/?#-]*)?/gi;
-  for (const part of sources) {
-    const normalized = part
-      .replace(/https?\s*:\s*\/\s*\//gi, "https://")
-      .replace(/([a-z0-9])\s*\.\s*(?=[a-z0-9])/gi, "$1.")
-      .replace(/([?/=&])\s*\n\s*/g, "$1")
-      .replace(/([?&]\s*[a-z]{1,10}\s*=\s*[a-z0-9_-]{1,})\s*\n\s*([a-z0-9_-]{6,})/gi, "$1$2")
-      .replace(/([.?=&/])\s+(?=[a-z0-9])/gi, "$1")
-      .replace(/\s+(?=[?&=])/g, "");
-    const urls = normalized.match(linkPattern) ?? [];
-    for (const candidate of urls) {
-      const cleaned = candidate.replace(/[.,;:)}\]]+$/g, "").replace(/\s/g, "");
-      try {
-        const u = new URL(/^https?:\/\//i.test(cleaned) ? cleaned : "https://" + cleaned);
-        const unwanted = /(?:youtube|youtu\.be|facebook|instagram|telegram|whatsapp|twitter|x\.com)\./i.test(u.hostname);
-        if (u.protocol === "https:" && !unwanted && u.hostname.includes(".") && (u.search || u.pathname !== "/")) return u.href;
-      } catch { /* do not guess an invalid OCR URL */ }
+  const base=ocrText.replace(/[\u200b\u200e\u200f]/g,"").replace(/\r/g,"");
+  const marker=/apply\s*(?:now|link)\s*:?\s*/i.exec(base);
+  const sections=marker?[base.slice(marker.index+marker[0].length),base]:[base];
+  const pattern=/(?:https?:\/\/)?(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}(?:\/[^\s<>"'‘’“”]*)?/gi;
+  const possible:string[]=[];
+  for(const section of sections){
+    const t=section
+      .replace(/https?\s*:\s*\/\s*\//gi,x=>x.toLowerCase().startsWith("https")?"https://":"http://")
+      .replace(/([a-z0-9])\s*\.\s*(?=[a-z0-9])/gi,"$1.")
+      .replace(/([?/=&])\s*\n\s*/g,"$1")
+      .replace(/\n\s*(?=[?&])/g,"")
+      .replace(/([?&])\s*([a-z0-9_-]{1,18})\s*=\s*/gi,"$1$2=")
+      .replace(/([?&][a-z0-9_-]{1,18}=[a-z0-9_%-]{5,})\s*\n\s*([a-z0-9_%-]{6,})/gi,"$1$2")
+      .replace(/\/\s+\?/g,"/?")
+      .replace(/\s*\n\s*(?=[A-Za-z0-9_-]{12,}(?:\s|$))/g,"");
+    for(const found of t.matchAll(pattern)){
+      const match=found[0].replace(/[.,;:)\]}]+$/g,"");
+      try{
+        const url=new URL(/^https?:\/\//i.test(match)?match:"https://"+match);
+        if(!["http:","https:"].includes(url.protocol))continue;
+        if(/(?:youtube|youtu\.be|instagram|facebook|telegram|whatsapp|twitter)\./i.test(url.hostname))continue;
+        if(/[?&=]$/.test(match))continue;
+        if((!url.pathname||url.pathname==="/")&&!url.search)continue;
+        if(url.search && [...url.searchParams.values()].some(v=>!v))continue;
+        possible.push(url.href);
+      }catch{/* A broken OCR link should not be presented as valid. */}
     }
   }
-  return "";
+  return possible.sort((a,b)=>scoreURL(b)-scoreURL(a))[0]||"";
 }
-
-async function cropImage(file: File, topFraction: number, bottomFraction: number) {
-  const bitmap = await createImageBitmap(file);
-  try {
-    const y = Math.floor(bitmap.height * topFraction);
-    const h = Math.max(1, Math.floor(bitmap.height * bottomFraction) - y);
-    const canvas = document.createElement("canvas");
-    canvas.width = bitmap.width * 2;
-    canvas.height = h * 2;
-    const context = canvas.getContext("2d");
-    if (!context) throw new Error("Unable to read image");
-    context.fillStyle = "white";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.imageSmoothingQuality = "high";
-    context.drawImage(bitmap, 0, y, bitmap.width, h, 0, 0, canvas.width, canvas.height);
+function scoreURL(s:string):number{
+  try{
+    const u=new URL(s);
+    return (u.search?15+Math.min(u.search.length,120)/6:0)+(u.searchParams.has("h")?10:0)+Math.min(u.pathname.length,20)/3;
+  }catch{return 0}
+}
+async function cropImage(file:File,from:number,to:number,enhance=false):Promise<string>{
+  const bitmap=await createImageBitmap(file);
+  try{
+    const y=Math.floor(bitmap.height*from), h=Math.max(1,Math.floor(bitmap.height*to)-y);
+    const canvas=document.createElement("canvas");
+    canvas.width=bitmap.width*3;canvas.height=h*3;
+    const ctx=canvas.getContext("2d",{willReadFrequently:true});
+    if(!ctx)throw Error("Image canvas unavailable");
+    ctx.fillStyle="white";ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.imageSmoothingQuality="high";
+    ctx.drawImage(bitmap,0,y,bitmap.width,h,0,0,canvas.width,canvas.height);
+    if(enhance){
+      const data=ctx.getImageData(0,0,canvas.width,canvas.height);
+      for(let n=0;n<data.data.length;n+=4){
+        const lum=data.data[n]*.299+data.data[n+1]*.587+data.data[n+2]*.114;
+        const val=lum<170?0:255;
+        data.data[n]=data.data[n+1]=data.data[n+2]=val;data.data[n+3]=255;
+      }
+      ctx.putImageData(data,0,0);
+    }
     return canvas.toDataURL("image/png");
-  } finally {
-    bitmap.close();
-  }
+  }finally{bitmap.close()}
+}
+function compareLinks(reads:string[]){
+  const candidates=reads.map(extractApplyLink).filter(Boolean);
+  const counts=new Map<string,number>();
+  candidates.forEach(v=>counts.set(v,(counts.get(v)||0)+1));
+  const ordered=[...counts].sort((a,b)=>b[1]-a[1]||scoreURL(b[0])-scoreURL(a[0]));
+  return {link:ordered[0]?.[0]||"",agree:(ordered[0]?.[1]||0)>=2};
 }
 
 export default function PhotoScanner({ onSaveDraft }: { onSaveDraft: (draft: ScanDraft) => Promise<void> }) {
@@ -132,6 +153,10 @@ export default function PhotoScanner({ onSaveDraft }: { onSaveDraft: (draft: Sca
   const [title, setTitle] = useState("");
   const [link, setLink] = useState("");
   const [copied, setCopied] = useState(false);
+  const [verified,setVerified]=useState(false);
+  const [confidence,setConfidence]=useState(false);
+  const [linkZoom,setLinkZoom]=useState("");
+  const [linkPosition,setLinkPosition]=useState<"bottom"|"middle">("bottom");
 
   useEffect(() => {
     if (!file) { setPreview(""); return; }
@@ -151,7 +176,7 @@ export default function PhotoScanner({ onSaveDraft }: { onSaveDraft: (draft: Sca
       setMessage("Maximum image size is 10 MB."); return;
     }
     setFile(value);setMessage("");setProgress(0);setReady(false);
-    setCategory("");setProvider("");setTitle("");setLink("");
+    setCategory("");setProvider("");setTitle("");setLink("");setVerified(false);setLinkZoom("");setConfidence(false);
     if (fileInput.current) fileInput.current.value = "";
   }
 
@@ -162,6 +187,7 @@ export default function PhotoScanner({ onSaveDraft }: { onSaveDraft: (draft: Sca
     setPreview("");
     setDragging(false);
     setProgress(0);
+    setLinkZoom("");
     if (fileInput.current) fileInput.current.value = "";
     setMessage(ready
       ? "Photo deleted from this browser. Your extracted category and Apply Now link are still available below."
@@ -185,20 +211,34 @@ export default function PhotoScanner({ onSaveDraft }: { onSaveDraft: (draft: Sca
         }
       });
       workerRef.current = worker;
-      const topImage = await cropImage(file, 0.12, 0.72);
-      const top = (await worker.recognize(topImage)).data.text ?? "";
-      setProgress(50);
-      const bottomImage = await cropImage(file, 0.67, 1);
-      const bottom = (await worker.recognize(bottomImage)).data.text ?? "";
+      const topImage=await cropImage(file,0.12,0.72);
+      const top=(await worker.recognize(topImage)).data.text||"";
+      setProgress(30);
+      // Read a magnified link region three ways, without sending the photo
+      // or OCR output to an API or database.
+      const from=linkPosition==="bottom"?0.73:0.45;
+      const until=linkPosition==="bottom"?0.95:0.80;
+      const focused=await cropImage(file,from,until);
+      setLinkZoom(focused);
+      const pass1=(await worker.recognize(focused)).data.text||"";
+      setProgress(55);
+      const highContrast=await cropImage(file,from,until,true);
+      const pass2=(await worker.recognize(highContrast)).data.text||"";
+      setProgress(80);
+      const wide=await cropImage(file,linkPosition==="bottom"?0.66:0.39,linkPosition==="bottom"?0.98:0.85);
+      const pass3=(await worker.recognize(wide)).data.text||"";
       setProgress(100);
-      const guessed = suggestCategory(top);
-      const identifiedProvider = providerFromTop(top);
+      const result=compareLinks([pass1,pass2,pass3]);
+      const guessed=suggestCategory(top);
+      const bank=providerFromTop(top);
       setCategory(guessed);
-      setProvider(identifiedProvider);
-      setTitle(labelFor(guessed, identifiedProvider));
-      setLink(extractApplyLink(bottom));
+      setProvider(bank);
+      setTitle(labelFor(guessed,bank));
+      setLink(result.link);
+      setConfidence(result.agree);
+      setVerified(false);
       setReady(true);
-      setMessage("Review the category and exact URL. OCR can misread letters or tracking codes.");
+      setMessage(result.link ? (result.agree ? "Detected link in more than one scan. Verify every character in the zoomed link preview before copying." : "OCR scans disagreed. Please correct the link using the zoomed screenshot, or paste the original link.") : "Could not find a complete link. Change the link area and scan again, or paste the exact URL from the original source.");
     } catch (e) {
       setMessage("Scanning failed: " + (e instanceof Error ? e.message : "Unknown error") + ". Try another clear screenshot.");
     } finally {
@@ -209,7 +249,7 @@ export default function PhotoScanner({ onSaveDraft }: { onSaveDraft: (draft: Sca
   }
 
   async function copyLink() {
-    if (!link) return;
+    if (!verified || !link.trim()) {setMessage("Verify the link against the screenshot before copying.");return;}
     try {
       await navigator.clipboard.writeText(link.trim());
       setCopied(true);
@@ -218,6 +258,7 @@ export default function PhotoScanner({ onSaveDraft }: { onSaveDraft: (draft: Sca
   }
 
   async function save() {
+    if (!verified) {setMessage("Verify the complete link before saving.");return;}
     if (!category) { setMessage("Choose a category first."); return; }
     if (title.trim().length < 3) { setMessage("Enter the correct bank / product name before saving."); return; }
     let parsed: URL;
@@ -256,6 +297,7 @@ export default function PhotoScanner({ onSaveDraft }: { onSaveDraft: (draft: Sca
           <UploadCloud size={17}/>Choose Photo
         </button>
       </div>
+      {preview&&<div className="mt-4"><label className="field-label">Where is the Apply Now link?</label><select className="form-input max-w-sm" value={linkPosition} onChange={e=>{setLinkPosition(e.target.value as "bottom"|"middle");setReady(false);setLinkZoom("");setVerified(false)}} disabled={scanning}><option value="bottom">Bottom part of image (default)</option><option value="middle">Middle part of image</option></select></div>}
       {preview&&<div className="mt-5 flex flex-wrap items-center gap-4">
         <img src={preview} alt="Selected screenshot preview" className="h-40 max-w-44 rounded-xl border object-contain"/>
         <div className="min-w-0 flex-1">
@@ -295,16 +337,20 @@ export default function PhotoScanner({ onSaveDraft }: { onSaveDraft: (draft: Sca
         <span className="field-label">Bank / Product Name (for your category list)</span>
         <input className="form-input" value={title} onChange={e=>setTitle(e.target.value)} placeholder="e.g. HDFC Bank Credit Card"/>
       </label>
+      {linkZoom&&preview&&<div className="rounded-xl border border-emerald-100 bg-slate-50 p-3"><p className="mb-2 flex items-center gap-2 text-sm font-bold"><ZoomIn size={18}/>Zoomed link area — compare every character</p><img src={linkZoom} alt="Magnified portion of your screenshot containing the printed link" className="w-full max-h-96 object-contain"/><p className="mt-2 text-xs text-slate-500">The URL printed in the photo is not guaranteed to be OCR-perfect, especially tracking codes.</p></div>}
       <label className="block">
         <span className="field-label">Apply Now Link *</span>
-        <textarea spellCheck={false} className="form-input break-all font-mono text-xs" rows={3} value={link} onChange={e=>setLink(e.target.value)} placeholder="https://leads.example.com/?h=..."/>
+        <textarea spellCheck={false} className="form-input break-all font-mono text-xs" rows={3} value={link} onChange={e=>{setLink(e.target.value);setVerified(false)}} placeholder="https://leads.example.com/?h=..."/>
       </label>
+      <p className={"text-xs font-bold "+(confidence?"text-emerald-700":"text-amber-700")}>{confidence?"Two or more OCR passes matched — still confirm tracking characters.":"OCR result needs manual verification. If available, copy the original link from its source rather than from a screenshot."}</p>
+      <button className="btn-outline !py-2 text-xs" type="button" onClick={async()=>{try{const pasted=await navigator.clipboard.readText();setLink(pasted.trim());setVerified(false)}catch{setMessage("Clipboard access denied. Paste directly in the link field.")}}}><ClipboardPaste size={16}/>Paste Original Link</button>
+      <label className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm"><input type="checkbox" className="mt-1" checked={verified} onChange={e=>setVerified(e.target.checked)}/><span>I have checked the full link, including every character after <code>?</code>, against the original photo or source.</span></label>
       <div className="flex flex-wrap gap-3">
-        <button type="button" onClick={copyLink} disabled={!link.trim()} className="btn-outline">
+        <button type="button" onClick={copyLink} disabled={!link.trim()||!verified} className="btn-outline">
           {copied?<Check size={17}/>:<ClipboardCopy size={17}/>}
           {copied?"Link Copied":"Copy Apply Now Link"}
         </button>
-        <button type="button" disabled={saving||!category||!link.trim()} onClick={save} className="btn-primary">
+        <button type="button" disabled={saving||!category||!link.trim()||!verified} onClick={save} className="btn-primary">
           {saving?<LoaderCircle className="animate-spin" size={17}/>:<ShieldCheck size={17}/>}
           Save to Category (Unpublished)
         </button>
