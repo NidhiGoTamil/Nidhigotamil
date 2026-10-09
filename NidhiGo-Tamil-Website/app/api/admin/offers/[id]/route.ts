@@ -10,5 +10,8 @@ export async function PUT(req:NextRequest,{params}:{params:Promise<{id:string}>}
 }
 export async function DELETE(req:NextRequest,{params}:{params:Promise<{id:string}>}){
  if(!await adminGuard())return unauthorized();const {id}=await params;if(!z.string().uuid().safeParse(id).success)return NextResponse.json({error:"Invalid offer id"},{status:400});
- const {error}=await adminDb().from("offers").update({published:false,updated_at:new Date().toISOString()}).eq("id",id);return error?NextResponse.json({error:error.message},{status:500}):NextResponse.json({ok:true});
+ const {data,error}=await adminDb().from("offers").delete().eq("id",id).select("id").maybeSingle();
+ if(error)return NextResponse.json({error:error.message},{status:500});
+ if(!data)return NextResponse.json({error:"Product not found"},{status:404});
+ return NextResponse.json({ok:true,deleted:true});
 }
