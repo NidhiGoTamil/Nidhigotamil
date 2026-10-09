@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, DragEvent } from "react";
-import { Check, ClipboardCopy, ImagePlus, LoaderCircle, ScanLine, ShieldCheck, UploadCloud } from "lucide-react";
+import { Check, ClipboardCopy, ImagePlus, LoaderCircle, ScanLine, ShieldCheck, UploadCloud, Trash2 } from "lucide-react";
 import { categories } from "@/lib/demo";
 import type { CategorySlug } from "@/lib/config";
 
@@ -155,6 +155,19 @@ export default function PhotoScanner({ onSaveDraft }: { onSaveDraft: (draft: Sca
     if (fileInput.current) fileInput.current.value = "";
   }
 
+  function removePhoto() {
+    // Remove only the selected photo; keep extracted fields available for copy or review.
+    if (scanning || saving) return;
+    setFile(null);
+    setPreview("");
+    setDragging(false);
+    setProgress(0);
+    if (fileInput.current) fileInput.current.value = "";
+    setMessage(ready
+      ? "Photo deleted from this browser. Your extracted category and Apply Now link are still available below."
+      : "Photo deleted from this browser. Nothing was uploaded.");
+  }
+
   function onDrop(e: DragEvent<HTMLDivElement>) {
     e.preventDefault();setDragging(false);
     selectFile(e.dataTransfer.files?.[0]);
@@ -237,20 +250,27 @@ export default function PhotoScanner({ onSaveDraft }: { onSaveDraft: (draft: Sca
       >
         <ImagePlus className="text-forest-700" size={34}/>
         <p className="mt-3 font-bold">Drag & drop an offer screenshot</p>
-        <p className="mt-1 text-xs text-slate-500">or upload PNG, JPG, WebP · Max 10 MB</p>
+        <p className="mt-1 text-xs text-slate-500">or select a local PNG, JPG, WebP · Max 10 MB</p>
         <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(e:ChangeEvent<HTMLInputElement>)=>selectFile(e.target.files?.[0])}/>
         <button className="btn-outline mt-4 !py-2 text-sm" type="button" disabled={scanning||saving} onClick={()=>fileInput.current?.click()}>
-          <UploadCloud size={17}/>Upload Photo
+          <UploadCloud size={17}/>Choose Photo
         </button>
       </div>
       {preview&&<div className="mt-5 flex flex-wrap items-center gap-4">
         <img src={preview} alt="Selected screenshot preview" className="h-40 max-w-44 rounded-xl border object-contain"/>
         <div className="min-w-0 flex-1">
           <p className="break-all text-xs text-slate-500">{file?.name}</p>
-          <button type="button" disabled={scanning||saving} onClick={scan} className="btn-primary mt-3">
-            {scanning?<LoaderCircle className="animate-spin" size={18}/>:<ScanLine size={18}/>}
-            {scanning?"Scanning...":"Scan Photo"}
-          </button>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <button type="button" disabled={scanning||saving} onClick={scan} className="btn-primary">
+              {scanning?<LoaderCircle className="animate-spin" size={18}/>:<ScanLine size={18}/>}
+              {scanning?"Scanning...":"Scan Photo"}
+            </button>
+            <button type="button" disabled={scanning||saving} onClick={removePhoto}
+              aria-label="Delete selected photo"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white px-4 py-3 text-sm font-bold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50">
+              <Trash2 size={17}/>Delete Photo
+            </button>
+          </div>
           {scanning&&<p className="mt-2 text-xs text-forest-700">Recognizing text: {progress}%</p>}
         </div>
       </div>}
