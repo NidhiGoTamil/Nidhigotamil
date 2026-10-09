@@ -25,7 +25,7 @@ export default async function CategoryPage({params}:{params:Promise<{slug:string
     <h2 className="text-lg font-black text-forest-900 sm:text-xl">Products &amp; Offers</h2>
     <span className="shrink-0 text-xs font-semibold text-slate-500">{offers.length} listed</span>
   </div>
-  <section className="grid auto-rows-fr gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3" aria-label={cat.title+" products"}>
+  <section className="mx-auto grid max-w-5xl grid-cols-1 gap-3 sm:gap-4" aria-label={cat.title+" products"}>
    {offers.map(o=><OfferCard key={o.id} offer={o}/>)}
   </section>
   {!offers.length&&<div className="card mt-5 p-8 text-center text-sm text-slate-600">No published offers yet. Please check again soon.</div>}
