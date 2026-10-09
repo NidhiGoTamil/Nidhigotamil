@@ -1,6 +1,7 @@
 "use client";
 
 import {Play,Youtube,ExternalLink} from "lucide-react";
+import type {MouseEvent} from "react";
 
 type Props={videoId:string;title:string;compact?:boolean};
 
@@ -14,7 +15,7 @@ export default function YouTubeVideoLink({videoId,title,compact=false}:Props){
  if(!/^[A-Za-z0-9_-]{11}$/.test(videoId))return null;
  const youtubeUrl="https://www.youtube.com/watch?v="+videoId;
  const thumbnail="https://i.ytimg.com/vi/"+videoId+"/hqdefault.jpg";
- function openYouTubeApp(event:React.MouseEvent<HTMLAnchorElement>){
+ function openYouTubeApp(event:MouseEvent<HTMLAnchorElement>){
   if(typeof navigator==="undefined")return;
   const ua=navigator.userAgent;
   if(/Android/i.test(ua)&&/Chrome\/\d+/i.test(ua)){
