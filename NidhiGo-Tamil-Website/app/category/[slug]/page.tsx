@@ -4,15 +4,30 @@ import OfferCard from "@/components/OfferCard";
 import {categories} from "@/lib/demo";
 import {CATEGORY_ORDER,type CategorySlug} from "@/lib/config";
 import {getOffers} from "@/lib/data";
+
 export const dynamic="force-dynamic";
+
 export default async function CategoryPage({params}:{params:Promise<{slug:string}>}){
  const {slug}=await params;
  if(!CATEGORY_ORDER.includes(slug as CategorySlug))notFound();
  const cat=categories.find(c=>c.slug===slug)!;
  const offers=await getOffers(slug as CategorySlug);
- return <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6"><nav className="text-xs text-slate-500"><Link href="/">Home</Link> / {cat.title}</nav>
- <div className="mt-5 rounded-3xl bg-gradient-to-r from-forest-800 to-forest-600 p-6 text-white sm:p-9"><div className="mb-2 text-4xl">{cat.emoji}</div><h1 className="text-3xl font-black sm:text-4xl">{cat.title}</h1><p className="mt-2 max-w-xl text-sm text-emerald-50">Browse available {cat.title.toLowerCase()} and view requirements, guidance and application information.</p></div>
- <div className="mt-9 flex items-center justify-between"><h2 className="text-xl font-black text-forest-900">Products & Offers</h2><span className="text-xs font-semibold text-slate-500">{offers.length} listed</span></div>
- <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{offers.map(o=><OfferCard key={o.id} offer={o}/>)}</div>
- {!offers.length&&<div className="card mt-6 p-10 text-center">No published offers yet. Please check again soon.</div>}</main>
+ return <main className="mx-auto max-w-6xl px-3 pb-6 pt-5 sm:px-6 sm:pt-7">
+  <nav className="text-xs text-slate-500"><Link href="/" className="hover:text-forest-700">Home</Link> / {cat.title}</nav>
+  <header className="mt-3 flex min-h-[88px] items-center gap-3 rounded-[20px] bg-gradient-to-r from-forest-800 to-forest-600 px-4 py-4 text-white sm:min-h-[108px] sm:gap-5 sm:px-7 sm:py-5">
+   <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/15 text-3xl sm:h-14 sm:w-14" aria-hidden="true">{cat.emoji}</span>
+   <div className="min-w-0">
+    <h1 className="text-xl font-black leading-tight sm:text-2xl">{cat.title}</h1>
+    <p className="mt-1 text-xs leading-5 text-emerald-50 sm:text-sm">Explore product details, eligibility and available application links.</p>
+   </div>
+  </header>
+  <div className="mb-3 mt-6 flex items-center justify-between gap-2 sm:mt-7">
+    <h2 className="text-lg font-black text-forest-900 sm:text-xl">Products &amp; Offers</h2>
+    <span className="shrink-0 text-xs font-semibold text-slate-500">{offers.length} listed</span>
+  </div>
+  <section className="grid auto-rows-fr gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3" aria-label={cat.title+" products"}>
+   {offers.map(o=><OfferCard key={o.id} offer={o}/>)}
+  </section>
+  {!offers.length&&<div className="card mt-5 p-8 text-center text-sm text-slate-600">No published offers yet. Please check again soon.</div>}
+ </main>;
 }
