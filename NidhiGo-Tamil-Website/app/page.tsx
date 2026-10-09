@@ -72,27 +72,6 @@ export default async function Home() {
           <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={17} className="text-forest-600"/> Provider Links</span>
         </section>
 
-        <section aria-labelledby="about-title" className="mx-auto mt-4 max-w-5xl rounded-[19px] border border-emerald-100/80 bg-white px-5 py-5 shadow-[0_7px_24px_rgba(18,58,44,.045)] sm:mt-5 sm:px-7 sm:py-6">
-          <h2 id="about-title" className="text-xl font-black tracking-tight text-[#102741] sm:text-2xl">
-            About <span className="text-forest-500">NidhiGo Tamil</span>
-          </h2>
-          <p className="mt-2 max-w-4xl text-xs leading-6 text-slate-600 sm:text-sm">
-            Explore loans, bank accounts, credit cards, demat accounts, insurance and investment products in one place. NidhiGo Tamil is an independent information and affiliate website, not a bank or lender.
-          </p>
-          <Link href="/about" className="mt-3 inline-flex items-center gap-2 rounded-full bg-forest-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-forest-800 sm:text-sm">
-            Know More <ArrowRight size={15}/>
-          </Link>
-        </section>
-
-        <section aria-labelledby="help-title" className="mx-auto mt-4 flex max-w-5xl flex-col gap-3 rounded-[19px] border border-sky-100 bg-gradient-to-r from-[#eef8ff] to-[#edf7f4] px-5 py-4 sm:mt-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
-          <div>
-            <h2 id="help-title" className="text-base font-black text-[#102741] sm:text-lg">Contact &amp; Enquiries</h2>
-            <p className="mt-1 text-xs leading-5 text-slate-600 sm:text-sm">Choose a service category to view offers and send an enquiry.</p>
-          </div>
-          <Link href="#services" className="inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-full bg-[#104e89] px-4 py-2.5 text-xs font-bold text-white transition hover:bg-[#0b3764] sm:self-auto sm:text-sm">
-            Browse Categories <ArrowRight size={17}/>
-          </Link>
-        </section>
       </main>
       <HomeFooter settings={settings}/>
     </>
