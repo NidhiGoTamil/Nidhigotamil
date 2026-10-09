@@ -15,13 +15,24 @@ const emptyOffer:Omit<Product,"id">={slug:"",category:"loan",title:"",provider_n
 const emptySettings:SettingsData={logo_url:"",banner_url:"",headline:"Simple Banking, Brighter Futures",subheadline:"All Financial Solutions in One Place",youtube_url:"",telegram_url:"",instagram_url:"",x_url:""};
 const nav=[{key:"dashboard",label:"Dashboard",Icon:LayoutDashboard},{key:"applications",label:"Applications",Icon:Users},{key:"offers",label:"Add / Edit Offers",Icon:PackagePlus},{key:"settings",label:"Website Settings",Icon:Settings},{key:"scanner",label:"Scan Photo",Icon:ScanLine}] as const;
 async function request(path:string,options?:RequestInit){const res=await fetch(path,{cache:"no-store",...options});const data=await res.json().catch(()=>({}));if(!res.ok)throw Error(data.error||"Something went wrong");return data;}
-function MultiList({label,value,onChange}:{label:string,value:string[],onChange:(v:string[])=>void}){return <label className="block sm:col-span-2"><span className="field-label">{label} (one per line)</span><textarea rows={4} value={value.join("\n")} onChange={e=>onChange(e.target.value.split("\n"))} className="form-input resize-y"/></label>}
+function previewYoutube(url:string|null|undefined):string {
+ try {
+  const u=new URL(url||"");
+  let id="";
+  if(u.hostname==="youtu.be")id=u.pathname.split("/")[1]||"";
+  if(["www.youtube.com","youtube.com","m.youtube.com","www.youtube-nocookie.com"].includes(u.hostname))
+   id=u.searchParams.get("v")||u.pathname.match(/^\/(?:shorts|embed|live)\/([A-Za-z0-9_-]{11})/)?.[1]||"";
+  return /^[A-Za-z0-9_-]{11}$/.test(id)?"https://www.youtube-nocookie.com/embed/"+id:"";
+ } catch {return ""}
+}
 export default function AdminDashboard(){
  const router=useRouter();const [tab,setTab]=useState<Section>("dashboard"),[busy,setBusy]=useState(false),[notice,setNotice]=useState(""),[error,setError]=useState("");
  const [stats,setStats]=useState<any>(null),[leads,setLeads]=useState<Lead[]>([]),[count,setCount]=useState(0),[page,setPage]=useState(1),[category,setCategory]=useState(""),[from,setFrom]=useState(""),[to,setTo]=useState(""),[search,setSearch]=useState("");
  const [offers,setOffers]=useState<Product[]>([]),[offer,setOffer]=useState<Omit<Product,"id">|Product>(emptyOffer),[editing,setEditing]=useState<string|null>(null),[settings,setSettings]=useState<SettingsData>(emptySettings);
  const [uploading,setUploading]=useState("");
  const filters=new URLSearchParams({page:String(page),category,from,to,search}).toString();
+ const videoPreview=previewYoutube(offer.tutorial_url);
+ const selectedCategoryTitle=categories.find(c=>c.slug===offer.category)?.title||"Category";
  const loadStats=useCallback(async()=>{setStats(await request("/api/admin/stats"))},[]);
  const loadLeads=useCallback(async()=>{const result=await request("/api/admin/applications?"+filters);setLeads(result.applications);setCount(result.count)},[filters]);
  const loadOffers=useCallback(async()=>{const result=await request("/api/admin/offers");setOffers(result.offers)},[]);
@@ -42,9 +53,21 @@ export default function AdminDashboard(){
  }
  async function logout(){if(process.env.NEXT_PUBLIC_SUPABASE_URL&&process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY){const db=createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);await db.auth.signOut()}router.push("/admin/login");router.refresh()}
  async function updateLead(id:string,status:string,admin_notes:string){try{await request("/api/admin/applications",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({id,status,admin_notes})});setNotice("Application updated");await loadLeads()}catch(e){setError((e as Error).message)}}
- async function saveOffer(e:React.FormEvent){e.preventDefault();setBusy(true);setError("");setNotice("");try{const payload={...offer,benefits:offer.benefits.filter(Boolean),documents:offer.documents.filter(Boolean),steps:offer.steps.filter(Boolean)};
-  const url=editing?`/api/admin/offers/${editing}`:"/api/admin/offers";
-  await request(url,{method:editing?"PUT":"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});setNotice(editing?"Offer updated":"Offer added");setOffer(emptyOffer);setEditing(null);await loadOffers();}catch(e){setError((e as Error).message)}finally{setBusy(false)}}
+ async function saveOffer(e:React.FormEvent){
+  e.preventDefault();setBusy(true);setError("");setNotice("");
+  try{
+   const short=offer.title.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,95).replace(/-$/g,"")||"new-product";
+   const slug=editing?offer.slug:short+"-"+crypto.randomUUID().slice(0,8);
+   const publish=Boolean(offer.affiliate_url?.trim());
+   const payload={...offer,slug,provider_name:offer.provider_name.trim()||offer.title.trim(),
+    highlight:"",benefits:[],documents:[],steps:[],is_demo:false,published:publish};
+   const url=editing?"/api/admin/offers/"+editing:"/api/admin/offers";
+   await request(url,{method:editing?"PUT":"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+   const selected=offer.category;
+   setNotice(publish?"Product saved and published.":"Product saved as unpublished; add an Apply Link to publish.");
+   setOffer({...emptyOffer,category:selected});setEditing(null);await loadOffers();
+  }catch(e){setError((e as Error).message)}finally{setBusy(false)}
+ }
  function editOffer(p:Product){setEditing(p.id);setOffer({...p});window.scrollTo({top:0,behavior:"smooth"})}
  async function unpublish(p:Product){if(!confirm(`Unpublish ${p.title}?`))return;try{await request(`/api/admin/offers/${p.id}`,{method:"DELETE"});setNotice("Offer unpublished");await loadOffers()}catch(e){setError((e as Error).message)}}
  async function saveSettings(e:React.FormEvent){e.preventDefault();setBusy(true);try{await request("/api/admin/settings",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(settings)});setNotice("Website settings saved. Refresh the public page to view changes.")}catch(e){setError((e as Error).message)}finally{setBusy(false)}}
