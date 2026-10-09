@@ -1,20 +1,16 @@
 "use client";
 import {useCallback,useEffect,useState} from "react";
-import Link from "next/link";
-import {createBrowserClient} from "@supabase/ssr";
-import {useRouter} from "next/navigation";
 import {categories} from "@/lib/demo";
 import AdminPostManager from "@/components/AdminPostManager";
-import {LayoutDashboard,Users,PackagePlus,Layers,Download,LogOut,RefreshCw,ExternalLink} from "lucide-react";
+import {LayoutDashboard,Users,Layers,Download,RefreshCw} from "lucide-react";
 
-type Section="dashboard"|"applications"|"posts"|"services";
+type Section="dashboard"|"services"|"applications";
 type Lead={id:string,created_at:string,full_name:string,email:string,phone:string,category:string,offer_title:string|null,purpose:string,message:string,status:string,admin_notes:string};
 
 const nav=[
  {key:"dashboard",label:"Dashboard",Icon:LayoutDashboard},
- {key:"applications",label:"Applications",Icon:Users},
- {key:"posts",label:"Add / Edit Post",Icon:PackagePlus},
- {key:"services",label:"Our Services",Icon:Layers}
+ {key:"services",label:"Our Services",Icon:Layers},
+ {key:"applications",label:"Applications",Icon:Users}
 ] as const;
 
 async function request(path:string,options?:RequestInit){
@@ -24,7 +20,6 @@ async function request(path:string,options?:RequestInit){
  return data;
 }
 export default function AdminDashboard(){
- const router=useRouter();
  const [tab,setTab]=useState<Section>("dashboard");
  const [notice,setNotice]=useState("");
  const [error,setError]=useState("");
@@ -55,13 +50,6 @@ export default function AdminDashboard(){
  },[tab,loadStats,loadLeads]);
 
  function changeTab(value:Section){setTab(value);setError("");setNotice("")}
- async function logout(){
-  if(process.env.NEXT_PUBLIC_SUPABASE_URL&&process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY){
-   const db=createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-   await db.auth.signOut();
-  }
-  router.push("/admin/login");router.refresh();
- }
  async function updateLead(id:string,status:string,admin_notes:string){
   try{
    await request("/api/admin/applications",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({id,status,admin_notes})});
@@ -74,10 +62,6 @@ export default function AdminDashboard(){
    <div>
     <p className="text-xs font-bold uppercase tracking-widest text-forest-600">Secure Administration</p>
     <h1 className="mt-1 text-2xl font-black text-forest-900 sm:text-3xl">NidhiGo Admin Dashboard</h1>
-   </div>
-   <div className="flex gap-2">
-    <Link href="/" target="_blank" className="btn-outline !px-3 !py-2 text-xs"><ExternalLink size={15}/>Website</Link>
-    <button type="button" className="btn-outline !px-3 !py-2 text-xs" onClick={()=>{void logout()}}><LogOut size={16}/>Sign Out</button>
    </div>
   </header>
   <div className="grid gap-5 md:grid-cols-[210px_minmax(0,1fr)]">
@@ -151,8 +135,7 @@ export default function AdminDashboard(){
       <button type="button" disabled={page*50>=count} onClick={()=>setPage(page+1)} className="btn-outline !py-2">Next</button>
      </div>
     </>}
-    {tab==="posts"&&<AdminPostManager mode="editor"/>}
-    {tab==="services"&&<AdminPostManager mode="services"/>}
+    {tab==="services"&&<AdminPostManager/>}
    </section>
   </div>
  </main>;
