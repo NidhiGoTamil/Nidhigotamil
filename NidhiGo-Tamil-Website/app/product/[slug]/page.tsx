@@ -1,20 +1,22 @@
 import Link from "next/link";
 import {notFound} from "next/navigation";
 import {ArrowLeft,ArrowUpRight,CheckCircle2,PlayCircle,ShieldAlert} from "lucide-react";
+import YouTubeVideoLink from "@/components/YouTubeVideoLink";
 import {getOffer} from "@/lib/data";
 
 export const dynamic="force-dynamic";
 
-function youtubeEmbed(url:string|null){
- if(!url)return null;
+function youtubeVideoId(value:string|null){
+ if(!value)return null;
  try{
-  const u=new URL(url);
+  const url=new URL(value.trim());
+  if(url.protocol!=="https:")return null;
   let id="";
-  if(u.hostname==="youtu.be")id=u.pathname.slice(1);
-  if(["www.youtube.com","youtube.com","m.youtube.com","www.youtube-nocookie.com"].includes(u.hostname)){
-   id=u.searchParams.get("v")||u.pathname.match(/^\/(?:shorts|embed)\/([A-Za-z0-9_-]+)/)?.[1]||"";
+  if(url.hostname==="youtu.be")id=url.pathname.split("/")[1]||"";
+  if(["www.youtube.com","youtube.com","m.youtube.com","www.youtube-nocookie.com"].includes(url.hostname)){
+   id=url.searchParams.get("v")||url.pathname.match(/^\/(?:shorts|embed|live)\/([A-Za-z0-9_-]{11})/)?.[1]||"";
   }
-  return /^[A-Za-z0-9_-]{11}$/.test(id)?`https://www.youtube-nocookie.com/embed/${id}`:null;
+  return /^[A-Za-z0-9_-]{11}$/.test(id)?id:null;
  }catch{return null}
 }
 
@@ -22,7 +24,7 @@ export default async function ProductPage({params}:{params:Promise<{slug:string}
  const {slug}=await params;
  const offer=await getOffer(slug);
  if(!offer)notFound();
- const yt=youtubeEmbed(offer.tutorial_url);
+ const videoId=youtubeVideoId(offer.tutorial_url);
  const affiliate=offer.affiliate_url&&/^https:\/\//.test(offer.affiliate_url)?offer.affiliate_url:null;
  return <main className="mx-auto max-w-4xl px-3 pb-5 pt-5 sm:px-6 sm:pt-7">
   <Link href={"/category/"+offer.category} aria-label="Back to category products" className="mb-3 inline-flex items-center gap-2 rounded-xl border border-forest-700/15 bg-white px-3 py-2 text-xs font-bold text-forest-800 shadow-sm transition hover:bg-forest-50 sm:text-sm"><ArrowLeft size={16}/> Back</Link>
@@ -64,12 +66,10 @@ export default async function ProductPage({params}:{params:Promise<{slug:string}
     <ol className="space-y-2.5">{offer.steps.map((v,i)=><li key={i} className="flex gap-2.5 text-sm leading-6 text-slate-700"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-forest-100 font-bold text-forest-700">{i+1}</span><span>{v}</span></li>)}</ol>
    </section>}
 
-   {yt&&<section>
+   {videoId&&<section>
     <h2 className="mb-3 flex items-center gap-2 text-lg font-black text-forest-900 sm:text-xl"><PlayCircle size={22}/> YouTube Tutorial</h2>
-    <div className="aspect-video overflow-hidden rounded-xl bg-black">
-     <iframe className="h-full w-full" src={yt} title={offer.title+" tutorial video"} allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen loading="lazy"/>
-    </div>
-    {offer.tutorial_url&&<a href={offer.tutorial_url} className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-forest-700 underline" target="_blank" rel="noopener noreferrer">Watch on YouTube <ArrowUpRight size={14}/></a>}
+    <YouTubeVideoLink videoId={videoId} title={offer.title}/>
+    <p className="mt-2 text-sm font-semibold text-slate-600">வீடியோவைத் தொட்டால் YouTube-ல் திறக்கும்.</p>
    </section>}
 
    <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] font-medium leading-6 text-amber-950">
