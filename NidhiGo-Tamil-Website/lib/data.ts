@@ -1,3 +1,4 @@
+import {cache} from "react";
 import { publicDb } from "./supabase";
 import { demoOffers,demoSettings,categories,type Offer } from "./demo";
 import type { CategorySlug } from "./config";
@@ -23,9 +24,9 @@ export async function getCategories(){
   const {data,error}=await db.from("categories").select("slug,title,description,icon_url,emoji,accent").order("sort_order");
   return error?categories:(data??categories);
 }
-export async function getSettings(){
+export const getSettings=cache(async function getSettings(){
   const db=publicDb();
   if(!db) return demoSettings;
   const {data,error}=await db.from("site_settings").select("logo_url,banner_url,headline,subheadline,youtube_url,instagram_url,telegram_url,x_url").eq("id",1).maybeSingle();
   return error||!data?demoSettings:data;
-}
+});
