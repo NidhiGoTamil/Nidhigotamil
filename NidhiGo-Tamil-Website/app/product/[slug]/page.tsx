@@ -37,8 +37,8 @@ export default async function ProductPage({params}:{params:Promise<{slug:string}
      {offer.logo_url?<img alt={offer.provider_name+" logo"} src={offer.logo_url} className="h-full w-full object-contain"/>:offer.provider_name.charAt(0)||"N"}
     </div>
     <div className="min-w-0">
-     <p className="text-xs text-emerald-100">{offer.provider_name}</p>
-     <h1 className="mt-0.5 text-lg font-black leading-snug sm:text-2xl">{offer.title}</h1>
+     <p className="text-sm font-bold text-emerald-100">{offer.provider_name}</p>
+     <h1 className="mt-0.5 text-[23px] font-black leading-snug sm:text-[30px]">{offer.title}</h1>
      
     </div>
    </div>
@@ -49,7 +49,7 @@ export default async function ProductPage({params}:{params:Promise<{slug:string}
    {offer.highlight&&<div className="rounded-xl bg-forest-50 p-3 text-sm font-bold text-forest-800">{offer.highlight}</div>}
    <section>
     <h2 className="mb-3 text-lg font-black text-forest-900 sm:text-xl">Product Details</h2>
-    <p className="whitespace-pre-line text-sm leading-7 text-slate-600">{offer.description || "Product details will be added shortly."}</p>
+    <p className="whitespace-pre-line text-[16px] font-medium leading-8 text-slate-700">{offer.description || "Product details will be added shortly."}</p>
     {offer.benefits?.length>0&&<div className="mt-4">
      <h3 className="mb-2 text-sm font-bold text-forest-900">Benefits</h3>
      <ul className="space-y-2">{offer.benefits.map((v,i)=><li key={i} className="flex gap-2.5 text-sm leading-6 text-slate-600"><CheckCircle2 size={17} className="mt-1 shrink-0 text-forest-500"/>{v}</li>)}</ul>
@@ -72,7 +72,7 @@ export default async function ProductPage({params}:{params:Promise<{slug:string}
     {offer.tutorial_url&&<a href={offer.tutorial_url} className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-forest-700 underline" target="_blank" rel="noopener noreferrer">Watch on YouTube <ArrowUpRight size={14}/></a>}
    </section>}
 
-   <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-6 text-amber-950">
+   <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] font-medium leading-6 text-amber-950">
     <ShieldAlert size={16} className="mr-2 inline"/>
     Please verify eligibility, fees, terms and privacy information with the provider. This site may earn an affiliate commission from qualifying external links.
    </div>
