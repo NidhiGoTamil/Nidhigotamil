@@ -1,6 +1,6 @@
 import Link from "next/link";
 import {notFound} from "next/navigation";
-import {ArrowUpRight,CheckCircle2,PlayCircle,ShieldAlert} from "lucide-react";
+import {ArrowLeft,ArrowUpRight,CheckCircle2,PlayCircle,ShieldAlert} from "lucide-react";
 import {getOffer} from "@/lib/data";
 
 export const dynamic="force-dynamic";
@@ -25,6 +25,7 @@ export default async function ProductPage({params}:{params:Promise<{slug:string}
  const yt=youtubeEmbed(offer.tutorial_url);
  const affiliate=offer.affiliate_url&&/^https:\/\//.test(offer.affiliate_url)?offer.affiliate_url:null;
  return <main className="mx-auto max-w-4xl px-3 pb-5 pt-5 sm:px-6 sm:pt-7">
+  <Link href={"/category/"+offer.category} aria-label="Back to category products" className="mb-3 inline-flex items-center gap-2 rounded-xl border border-forest-700/15 bg-white px-3 py-2 text-xs font-bold text-forest-800 shadow-sm transition hover:bg-forest-50 sm:text-sm"><ArrowLeft size={16}/> Back</Link>
   <nav className="text-xs text-slate-500">
    <Link href="/" className="hover:text-forest-700">Home</Link> / <Link href={`/category/${offer.category}`} className="hover:text-forest-700">Category</Link> / {offer.title}
   </nav>
