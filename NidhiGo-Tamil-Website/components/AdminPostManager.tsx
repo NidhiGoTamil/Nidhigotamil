@@ -1,10 +1,8 @@
 "use client";
 import {useCallback,useEffect,useState} from "react";
-import Link from "next/link";
 import {categories,type Offer} from "@/lib/demo";
-import {Eye,Pencil,Trash2,X,Plus,ArrowLeft,UploadCloud,PlayCircle,ExternalLink,Save,Send,RefreshCw} from "lucide-react";
+import {Eye,Pencil,Trash2,X,Plus,ArrowLeft,PlayCircle,ExternalLink,Save,Send,RefreshCw} from "lucide-react";
 
-type Props={mode:"editor"|"services"};
 type CategorySlug=Offer["category"];
 type Draft=Omit<Offer,"id">;
 const emptyOffer:Draft={
@@ -43,9 +41,9 @@ function ProductVideo({url,title}:{url:string|null|undefined,title:string}){
  </div>;
 }
 
-export default function AdminPostManager({mode}:Props){
- const [screen,setScreen]=useState<"editor"|"services">(mode);
- const [category,setCategory]=useState<CategorySlug>("loan");
+export default function AdminPostManager(){
+ const [showForm,setShowForm]=useState(false);
+ const [category,setCategory]=useState<CategorySlug|null>(null);
  const [posts,setPosts]=useState<Offer[]>([]);
  const [draft,setDraft]=useState<Draft>({...emptyOffer});
  const [editing,setEditing]=useState<string|null>(null);
@@ -71,25 +69,26 @@ export default function AdminPostManager({mode}:Props){
   return()=>document.removeEventListener("keydown",onKeyDown);
  },[preview]);
 
- const categoryProducts=posts.filter(p=>p.category===category);
+ const categoryProducts=category?posts.filter(p=>p.category===category):[];
  const categoryTitle=categories.find(c=>c.slug===category)?.title||"Products";
 
  function pickCategory(slug:CategorySlug){
   setCategory(slug);setDraft({...emptyOffer,category:slug});
-  setEditing(null);setPreview(null);setNotice("");setError("");
+  setEditing(null);setShowForm(false);setPreview(null);setNotice("");setError("");
  }
  function startEdit(item:Offer){
   setPreview(null);setCategory(item.category);setDraft({...item});
-  setEditing(item.id);setScreen("editor");setError("");setNotice("");
+  setEditing(item.id);setShowForm(true);setError("");setNotice("");
   window.scrollTo({top:0,behavior:"smooth"});
  }
  function addInCategory(){
-  setDraft({...emptyOffer,category});setEditing(null);setScreen("editor");
+  if(!category)return;
+  setDraft({...emptyOffer,category});setEditing(null);setShowForm(true);
   setNotice("");setError("");
   window.scrollTo({top:0,behavior:"smooth"});
  }
  function viewPosts(){
-  setPreview(null);setEditing(null);setScreen("services");
+  setPreview(null);setEditing(null);setShowForm(false);
   setNotice("");setError("");
   void load().catch(e=>setError(e instanceof Error?e.message:"Unable to refresh"));
  }
@@ -106,6 +105,7 @@ export default function AdminPostManager({mode}:Props){
  }
  async function save(publish:boolean){
   if(busy||uploading)return;
+  if(!category){setError("Choose a category first.");return;}
   if(draft.title.trim().length<3){setError("Enter a product title of at least 3 characters.");return}
   if(!draft.description.trim()){setError("Enter product details.");return}
   if(draft.tutorial_url?.trim()&&!youtubeEmbed(draft.tutorial_url)){
@@ -128,7 +128,7 @@ export default function AdminPostManager({mode}:Props){
     body:JSON.stringify(payload)
    });
    await load();
-   setEditing(null);setDraft({...emptyOffer,category});
+   setEditing(null);setShowForm(false);setDraft({...emptyOffer,category});
    setNotice(publish?"Product published successfully.":"Draft saved. It is not visible to website visitors until published.");
   }catch(e){setError(e instanceof Error?e.message:"Unable to save")}
   finally{setBusy(false)}
@@ -140,7 +140,7 @@ export default function AdminPostManager({mode}:Props){
   try{
    await adminRequest("/api/admin/offers/"+item.id,{method:"DELETE"});
    if(preview?.id===item.id)setPreview(null);
-   if(editing===item.id){setEditing(null);setDraft({...emptyOffer,category})}
+   if(editing===item.id){setEditing(null);setShowForm(false);setDraft({...emptyOffer,category:item.category})}
    await load();setNotice(item.title+" permanently deleted.");
   }catch(e){setError(e instanceof Error?e.message:"Delete failed")}
   finally{setBusy(false)}
@@ -150,11 +150,11 @@ export default function AdminPostManager({mode}:Props){
   <div className="flex flex-wrap items-center justify-between gap-3">
    <div>
     <p className="text-xs font-extrabold uppercase tracking-wider text-forest-600">Product management</p>
-    <h2 className="mt-1 text-xl font-black text-forest-900 sm:text-2xl">{screen==="editor"?"Add / Edit Post":"Our Services"}</h2>
+    <h2 className="mt-1 text-xl font-black text-forest-900 sm:text-2xl">Our Services</h2>
    </div>
-   {screen==="services"
-    ?<button type="button" onClick={addInCategory} className="btn-primary !px-4 !py-2.5 text-sm"><Plus size={17}/>Add Post</button>
-    :<button type="button" onClick={viewPosts} className="btn-outline !px-4 !py-2.5 text-sm"><ArrowLeft size={17}/>Our Services</button>}
+   {category&&(showForm
+    ?<button type="button" onClick={viewPosts} className="btn-outline !px-4 !py-2.5 text-sm"><ArrowLeft size={17}/>Back to Posts</button>
+    :<button type="button" onClick={addInCategory} className="btn-primary !px-4 !py-2.5 text-sm"><Plus size={17}/>Add Post</button>)}
   </div>
 
   <div className="card p-4 sm:p-5">
@@ -165,14 +165,15 @@ export default function AdminPostManager({mode}:Props){
      className={"flex min-h-16 items-center gap-2 rounded-2xl border px-3 py-2 text-left text-xs font-bold transition sm:text-sm "+(category===c.slug?"border-forest-700 bg-forest-700 text-white shadow-md":"border-emerald-100 bg-forest-50 text-forest-900 hover:bg-emerald-100")}>
       <span className="text-xl" aria-hidden="true">{c.emoji}</span>
       <span className="min-w-0">{c.title}</span>
-      {screen==="services"&&<span className={"ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-[10px] "+(category===c.slug?"bg-white/20":"bg-white")}>{posts.filter(p=>p.category===c.slug).length}</span>}
+      <span className={"ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-[10px] "+(category===c.slug?"bg-white/20":"bg-white")}>{posts.filter(p=>p.category===c.slug).length}</span>
     </button>)}
    </div>
   </div>
+  {!category&&<p className="rounded-xl bg-forest-50 px-4 py-3 text-sm text-forest-800">Select one of the six categories above to view its posts and add a new post.</p>}
   {error&&<p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
   {notice&&<p role="status" className="rounded-xl bg-emerald-50 p-3 text-sm text-forest-800">{notice}</p>}
 
-  {screen==="editor"&&<>
+  {showForm&&<>
    <div className="flex flex-wrap items-center justify-between gap-2">
     <h3 className="text-lg font-extrabold text-forest-900">{editing?"Edit Post":"New Post"} — {categoryTitle}</h3>
     {editing&&<button type="button" className="text-sm font-bold text-forest-700 underline" onClick={addInCategory}>Start new post</button>}
@@ -229,7 +230,7 @@ export default function AdminPostManager({mode}:Props){
    </form>
   </>}
 
-  {screen==="services"&&<section className="space-y-3" aria-label={categoryTitle+" post list"}>
+  {category&&<section className="space-y-3" aria-label={categoryTitle+" post list"}>
    <div className="flex items-center justify-between gap-2">
     <h3 className="text-lg font-black text-forest-900">{categoryTitle} Posts ({categoryProducts.length})</h3>
     <button type="button" onClick={()=>{void load().catch(e=>setError(e instanceof Error?e.message:"Unable to refresh"))}} className="btn-outline !px-3 !py-2 text-xs">
