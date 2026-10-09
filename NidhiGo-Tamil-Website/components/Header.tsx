@@ -1,10 +1,10 @@
 "use client";
 import Link from "next/link";
 import {useState} from "react";
-import {Menu,X,Globe,Info,FileText,ShieldCheck} from "lucide-react";
+import {Menu,X,Globe,Info,FileText,ShieldCheck,Mail} from "lucide-react";
 export default function Header({logoUrl}:{logoUrl?:string}){
  const [open,setOpen]=useState(false);
- const links=[{href:"/",label:"Website",icon:Globe},{href:"/about",label:"About Website",icon:Info},{href:"/disclaimer",label:"Disclaimer",icon:FileText},{href:"/terms",label:"Terms & Conditions",icon:ShieldCheck}];
+ const links=[{href:"/apply",label:"Contact & Enquiries",icon:Mail},{href:"/",label:"Website",icon:Globe},{href:"/about",label:"About Website",icon:Info},{href:"/disclaimer",label:"Disclaimer",icon:FileText},{href:"/terms",label:"Terms & Conditions",icon:ShieldCheck}];
  return <header className="sticky top-0 z-50 border-b border-forest-700/10 bg-white/95 backdrop-blur-xl">
   <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
    <Link href="/" className="flex items-center gap-3" onClick={()=>setOpen(false)}>
