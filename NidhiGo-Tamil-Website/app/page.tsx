@@ -66,10 +66,10 @@ export default async function Home() {
           </div>
         </section>
 
-        <section aria-label="Financial information highlights" className="mx-auto mt-5 grid max-w-5xl grid-cols-3 items-center gap-1 rounded-[16px] border border-emerald-100/80 bg-gradient-to-r from-emerald-50 via-white to-sky-50 px-2 py-3 text-[9px] font-semibold text-forest-800 sm:mt-6 sm:gap-4 sm:px-5 sm:py-4 sm:text-xs">
-          <span className="flex min-w-0 items-center justify-center gap-1 text-center sm:gap-2"><ShieldCheck size={17} className="h-4 w-4 shrink-0 text-forest-600 sm:h-5 sm:w-5"/> <span>Product Information</span></span>
-          <span className="flex min-w-0 items-center justify-center gap-1 text-center sm:gap-2"><Compass size={17} className="h-4 w-4 shrink-0 text-forest-600 sm:h-5 sm:w-5"/> <span>Six Categories</span></span>
-          <span className="flex min-w-0 items-center justify-center gap-1 text-center sm:gap-2"><CheckCircle2 size={17} className="h-4 w-4 shrink-0 text-forest-600 sm:h-5 sm:w-5"/> <span>Provider Links</span></span>
+        <section aria-label="Financial information highlights" className="mx-auto mt-5 grid max-w-5xl grid-cols-3 items-center gap-1 rounded-[16px] border border-emerald-100/80 bg-gradient-to-r from-emerald-50 via-white to-sky-50 px-1.5 py-3 text-[8px] font-semibold text-forest-800 sm:mt-6 sm:gap-4 sm:px-5 sm:py-4 sm:text-xs">
+          <span className="flex min-w-0 items-center justify-center gap-1 text-center sm:gap-2"><ShieldCheck size={17} className="hidden h-4 w-4 shrink-0 text-forest-600 sm:block sm:h-5 sm:w-5"/> <span className="whitespace-nowrap">Product Information</span></span>
+          <span className="flex min-w-0 items-center justify-center gap-1 text-center sm:gap-2"><Compass size={17} className="hidden h-4 w-4 shrink-0 text-forest-600 sm:block sm:h-5 sm:w-5"/> <span className="whitespace-nowrap">Six Categories</span></span>
+          <span className="flex min-w-0 items-center justify-center gap-1 text-center sm:gap-2"><CheckCircle2 size={17} className="hidden h-4 w-4 shrink-0 text-forest-600 sm:block sm:h-5 sm:w-5"/> <span className="whitespace-nowrap">Provider Links</span></span>
         </section>
 
       </main>
