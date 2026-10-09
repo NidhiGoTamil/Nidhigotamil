@@ -1,6 +1,7 @@
 "use client";
 import {useCallback,useEffect,useState} from "react";
 import {categories,type Offer} from "@/lib/demo";
+import YouTubeVideoLink from "@/components/YouTubeVideoLink";
 import {Eye,Pencil,Trash2,X,Plus,ArrowLeft,PlayCircle,ExternalLink,Save,Send,RefreshCw} from "lucide-react";
 
 type CategorySlug=Offer["category"];
@@ -31,14 +32,10 @@ function youtubeEmbed(value:string|null|undefined):string{
 }
 
 function ProductVideo({url,title}:{url:string|null|undefined,title:string}){
- const src=youtubeEmbed(url);
- if(!src)return null;
- return <div className="aspect-video w-full max-w-xl overflow-hidden rounded-2xl bg-slate-950">
-  <iframe title={title+" YouTube video"} src={src} loading="lazy" allowFullScreen
-   referrerPolicy="strict-origin-when-cross-origin"
-   allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
-   className="h-full w-full"/>
- </div>;
+ const embed=youtubeEmbed(url);
+ const id=embed.split("/").pop()||"";
+ if(!/^[A-Za-z0-9_-]{11}$/.test(id))return null;
+ return <YouTubeVideoLink videoId={id} title={title} compact/>;
 }
 
 export default function AdminPostManager(){
