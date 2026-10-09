@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Compass, ShieldCheck } from "lucide-react";
+import { CheckCircle2, Compass, ShieldCheck } from "lucide-react";
 import { getCategories, getSettings } from "@/lib/data";
 import HomeFooter from "@/components/HomeFooter";
 
@@ -58,18 +58,18 @@ export default async function Home() {
                   <h3 className="text-[13px] font-extrabold leading-5 text-[#102741] sm:text-lg">{category.title}</h3>
                   <p className="mt-1 text-[10px] leading-[15px] text-slate-600 sm:text-xs sm:leading-5">{category.description}</p>
                 </div>
-                <span className="absolute bottom-2.5 right-2.5 grid h-6 w-6 place-items-center rounded-full bg-forest-600 text-white transition-transform group-hover:translate-x-0.5 sm:static sm:h-9 sm:w-9 sm:shrink-0" aria-hidden="true">
-                  <ArrowRight size={14} />
+                <span className="absolute bottom-2.5 right-2.5 inline-flex h-6 items-center justify-center rounded-full bg-forest-600 px-3 text-white transition-transform group-hover:translate-x-0.5 sm:static sm:h-8 sm:shrink-0" aria-hidden="true">
+                  <span className="text-[10px] font-extrabold tracking-wide sm:text-xs">VISIT</span>
                 </span>
               </Link>
             ))}
           </div>
         </section>
 
-        <section aria-label="Financial information highlights" className="mx-auto mt-5 flex max-w-5xl flex-wrap items-center justify-center gap-x-5 gap-y-2 rounded-[17px] border border-emerald-100/80 bg-gradient-to-r from-emerald-50 via-white to-sky-50 px-3 py-3 text-[11px] font-semibold text-forest-800 sm:mt-6 sm:gap-x-9 sm:py-4 sm:text-xs">
-          <span className="inline-flex items-center gap-1.5"><ShieldCheck size={17} className="text-forest-600"/> Product Information</span>
-          <span className="inline-flex items-center gap-1.5"><Compass size={17} className="text-forest-600"/> Six Categories</span>
-          <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={17} className="text-forest-600"/> Provider Links</span>
+        <section aria-label="Financial information highlights" className="mx-auto mt-5 grid max-w-5xl grid-cols-3 items-center gap-1 rounded-[16px] border border-emerald-100/80 bg-gradient-to-r from-emerald-50 via-white to-sky-50 px-2 py-3 text-[9px] font-semibold text-forest-800 sm:mt-6 sm:gap-4 sm:px-5 sm:py-4 sm:text-xs">
+          <span className="flex min-w-0 items-center justify-center gap-1 text-center sm:gap-2"><ShieldCheck size={17} className="h-4 w-4 shrink-0 text-forest-600 sm:h-5 sm:w-5"/> <span>Product Information</span></span>
+          <span className="flex min-w-0 items-center justify-center gap-1 text-center sm:gap-2"><Compass size={17} className="h-4 w-4 shrink-0 text-forest-600 sm:h-5 sm:w-5"/> <span>Six Categories</span></span>
+          <span className="flex min-w-0 items-center justify-center gap-1 text-center sm:gap-2"><CheckCircle2 size={17} className="h-4 w-4 shrink-0 text-forest-600 sm:h-5 sm:w-5"/> <span>Provider Links</span></span>
         </section>
 
       </main>
