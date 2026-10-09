@@ -38,32 +38,30 @@ export default async function ProductPage({params}:{params:Promise<{slug:string}
     <div className="min-w-0">
      <p className="text-xs text-emerald-100">{offer.provider_name}</p>
      <h1 className="mt-0.5 text-lg font-black leading-snug sm:text-2xl">{offer.title}</h1>
-     {offer.is_demo&&<span className="mt-1 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold text-amber-900">DEMO LISTING</span>}
+     
     </div>
    </div>
-   {offer.description&&<p className="text-xs leading-5 text-emerald-50 sm:text-sm">{offer.description}</p>}
+   
   </header>
 
   <article className="card mt-4 space-y-5 rounded-[21px] p-4 sm:space-y-6 sm:p-7">
    {offer.highlight&&<div className="rounded-xl bg-forest-50 p-3 text-sm font-bold text-forest-800">{offer.highlight}</div>}
    <section>
-    <h2 className="mb-3 text-lg font-black text-forest-900 sm:text-xl">Product Details &amp; Benefits</h2>
-    {offer.benefits?.length
-      ?<ul className="space-y-2.5">{offer.benefits.map((v,i)=><li key={i} className="flex gap-2.5 text-sm leading-6 text-slate-600"><CheckCircle2 size={17} className="mt-1 shrink-0 text-forest-500"/>{v}</li>)}</ul>
-      :<p className="text-sm text-slate-500">Benefits will be added after provider verification.</p>}
+    <h2 className="mb-3 text-lg font-black text-forest-900 sm:text-xl">Product Details</h2>
+    <p className="whitespace-pre-line text-sm leading-7 text-slate-600">{offer.description || "Product details will be added shortly."}</p>
+    {offer.benefits?.length>0&&<div className="mt-4">
+     <h3 className="mb-2 text-sm font-bold text-forest-900">Benefits</h3>
+     <ul className="space-y-2">{offer.benefits.map((v,i)=><li key={i} className="flex gap-2.5 text-sm leading-6 text-slate-600"><CheckCircle2 size={17} className="mt-1 shrink-0 text-forest-500"/>{v}</li>)}</ul>
+    </div>}
    </section>
-   <section>
+   {offer.documents?.length>0&&<section>
     <h2 className="mb-3 text-lg font-black text-forest-900 sm:text-xl">Documents Required</h2>
-    {offer.documents?.length
-      ?<ul className="list-inside list-disc space-y-2 text-sm leading-6 text-slate-600">{offer.documents.map((v,i)=><li key={i}>{v}</li>)}</ul>
-      :<p className="text-sm text-slate-500">Confirm documents with the provider before applying.</p>}
-   </section>
-   <section>
+    <ul className="list-inside list-disc space-y-2 text-sm leading-6 text-slate-600">{offer.documents.map((v,i)=><li key={i}>{v}</li>)}</ul>
+   </section>}
+   {offer.steps?.length>0&&<section>
     <h2 className="mb-3 text-lg font-black text-forest-900 sm:text-xl">How to Apply</h2>
-    {offer.steps?.length
-      ?<ol className="space-y-2.5">{offer.steps.map((v,i)=><li key={i} className="flex gap-2.5 text-sm leading-6 text-slate-700"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-forest-100 font-bold text-forest-700">{i+1}</span><span>{v}</span></li>)}</ol>
-      :<p className="text-sm text-slate-500">Review eligibility and terms on the provider's official application page.</p>}
-   </section>
+    <ol className="space-y-2.5">{offer.steps.map((v,i)=><li key={i} className="flex gap-2.5 text-sm leading-6 text-slate-700"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-forest-100 font-bold text-forest-700">{i+1}</span><span>{v}</span></li>)}</ol>
+   </section>}
 
    {yt&&<section>
     <h2 className="mb-3 flex items-center gap-2 text-lg font-black text-forest-900 sm:text-xl"><PlayCircle size={22}/> YouTube Tutorial</h2>
@@ -77,7 +75,7 @@ export default async function ProductPage({params}:{params:Promise<{slug:string}
     <ShieldAlert size={16} className="mr-2 inline"/>
     Please verify eligibility, fees, terms and privacy information with the provider. This site may earn an affiliate commission from qualifying external links.
    </div>
-   {affiliate&&!offer.is_demo
+   {affiliate
      ?<a className="btn-primary w-full !rounded-xl py-3.5 text-sm" href={affiliate} rel="noopener noreferrer sponsored" target="_blank">Continue to Apply <ArrowUpRight size={18}/></a>
      :<p className="rounded-xl bg-gray-100 px-4 py-3 text-center text-sm text-gray-500">Application link will be added after the product is verified.</p>}
   </article>
