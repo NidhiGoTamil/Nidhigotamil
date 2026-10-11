@@ -2,7 +2,7 @@
 import {useCallback,useEffect,useState} from "react";
 import {categories,type Offer} from "@/lib/demo";
 import YouTubeVideoLink from "@/components/YouTubeVideoLink";
-import {Eye,Pencil,Trash2,X,Plus,ArrowLeft,PlayCircle,ExternalLink,Save,Send,RefreshCw} from "lucide-react";
+import {Eye,Pencil,Trash2,X,Plus,ArrowLeft,PlayCircle,ExternalLink,Save,Send,RefreshCw,CheckCircle2,Link2Off} from "lucide-react";
 
 type CategorySlug=Offer["category"];
 type Draft=Omit<Offer,"id">;
@@ -29,6 +29,13 @@ function youtubeEmbed(value:string|null|undefined):string{
   }
   return /^[A-Za-z0-9_-]{11}$/.test(id)?"https://www.youtube-nocookie.com/embed/"+id:"";
  }catch{return ""}
+}
+
+// A green tick confirms an Apply Link was saved, not that the offer is approved.
+function hasApplyLink(url:string|null|undefined){
+ if(!url?.trim())return false;
+ try{return new URL(url.trim()).protocol==="https:"}
+ catch{return false}
 }
 
 function ProductVideo({url,title}:{url:string|null|undefined,title:string}){
@@ -241,8 +248,16 @@ export default function AdminPostManager(){
     <div className="flex min-w-0 flex-1 items-center gap-3">
      {item.logo_url?<img src={item.logo_url} alt="" className="h-12 w-12 shrink-0 rounded-xl bg-white object-contain"/>:<div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-forest-50 text-xl">{categories.find(c=>c.slug===item.category)?.emoji}</div>}
      <div className="min-w-0">
-      <h4 className="break-words text-sm font-extrabold text-forest-900">{item.title}</h4>
-      <p className={"mt-1 text-xs font-semibold "+(item.published?"text-emerald-700":"text-amber-700")}>{item.published?"Published":"Draft / Unpublished"}</p>
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+       <h4 className="break-words text-sm font-extrabold text-forest-900">{item.title}</h4>
+       {hasApplyLink(item.affiliate_url)&&<span title="Apply Link Added" aria-label="Apply Link Added" className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-extrabold text-green-800">
+        <CheckCircle2 size={15} aria-hidden="true"/>Link Added
+       </span>}
+      </div>
+      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+       <p className={"text-xs font-semibold "+(item.published?"text-emerald-700":"text-amber-700")}>{item.published?"Published":"Draft / Unpublished"}</p>
+       {!hasApplyLink(item.affiliate_url)&&<span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500"><Link2Off size={13} aria-hidden="true"/>Apply Link Missing</span>}
+      </div>
      </div>
     </div>
     <div className="flex shrink-0 flex-wrap gap-2">
@@ -267,7 +282,8 @@ export default function AdminPostManager(){
        {preview.logo_url?<img src={preview.logo_url} alt={preview.title+" logo"} className="h-16 w-16 shrink-0 rounded-xl bg-white object-contain p-1"/>:<span className="text-4xl">{categories.find(c=>c.slug===preview.category)?.emoji}</span>}
        <div><p className="text-xs font-bold text-forest-600">{categories.find(c=>c.slug===preview.category)?.title}</p>
         <h4 className="mt-1 text-lg font-black text-forest-900">{preview.title}</h4>
-        <p className="text-xs text-slate-500">{preview.published?"Published":"Unpublished Draft"}</p></div>
+        <p className="text-xs text-slate-500">{preview.published?"Published":"Unpublished Draft"}</p>
+        {hasApplyLink(preview.affiliate_url)?<span className="mt-1 inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-800"><CheckCircle2 size={15}/>Apply Link Added</span>:<span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-slate-500"><Link2Off size={15}/>Apply Link Missing</span>}</div>
       </div>
       <div><p className="mb-1 text-sm font-bold text-forest-900">Product Details</p><p className="whitespace-pre-line text-sm leading-6 text-slate-700">{preview.description||"No description added."}</p></div>
       {preview.benefits?.length>0&&<div><p className="mb-1 text-sm font-bold">Benefits</p>{preview.benefits.map((v,i)=><p key={i} className="text-sm text-slate-600">{v}</p>)}</div>}
