@@ -41,7 +41,7 @@ export default function Header({logoUrl,instagramUrl}:{logoUrl?:string;instagram
        <button type="button" disabled={signingOut} onClick={()=>{void signOut()}} className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-bold text-forest-800 transition hover:bg-forest-50 disabled:opacity-50"><LogOut size={18}/>{signingOut?"Signing Out...":"Sign Out"}</button>
        {signOutError&&<p role="alert" className="px-3 pb-2 text-xs text-red-700">{signOutError}</p>}
      </>:links.map((l,i)=><Link key={l.href} href={l.href} onClick={()=>setOpen(false)} className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-base font-bold transition hover:bg-forest-50 ${i===0?"mb-1 bg-forest-50 text-forest-800 hover:bg-forest-100":"text-slate-700"}`}><l.icon size={18}/>{l.label}</Link>)}
-     {instagram&&<a href={instagram} target="_blank" rel="noopener noreferrer" onClick={()=>setOpen(false)} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-base font-bold text-[#b92a78] transition hover:bg-pink-50"><Instagram size={18}/>Instagram</a>}
+     {!adminMenu&&instagram&&<a href={instagram} target="_blank" rel="noopener noreferrer" onClick={()=>setOpen(false)} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-base font-bold text-[#b92a78] transition hover:bg-pink-50"><Instagram size={18}/>Instagram</a>}
     </nav></>}
    </div>
   </div>
