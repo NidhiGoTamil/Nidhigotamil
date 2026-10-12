@@ -3,8 +3,8 @@ import Link from "next/link";
 import {useState} from "react";
 import {usePathname,useRouter} from "next/navigation";
 import {createBrowserClient} from "@supabase/ssr";
-import {Menu,X,Info,FileText,ShieldCheck,Mail,LogOut} from "lucide-react";
-export default function Header({logoUrl}:{logoUrl?:string}){
+import {Menu,X,Info,FileText,ShieldCheck,Mail,LogOut,Instagram} from "lucide-react";
+export default function Header({logoUrl,instagramUrl}:{logoUrl?:string;instagramUrl?:string|null}){
  const [open,setOpen]=useState(false);
  const [signingOut,setSigningOut]=useState(false);
  const [signOutError,setSignOutError]=useState("");
@@ -27,7 +27,8 @@ export default function Header({logoUrl}:{logoUrl?:string}){
   }catch(e){setSignOutError(e instanceof Error?e.message:"Sign out failed");}
   finally{setSigningOut(false)}
  }
- const links=[{href:"/apply",label:"Contact & Enquiries",icon:Mail},{href:"/about",label:"About Website",icon:Info},{href:"/disclaimer",label:"Disclaimer",icon:FileText},{href:"/terms",label:"Terms & Conditions",icon:ShieldCheck}];
+ const instagram=(()=>{try{const url=new URL(instagramUrl||"");return url.protocol==="https:"&&["instagram.com","www.instagram.com"].includes(url.hostname.toLowerCase())?url.href:""}catch{return ""}})();
+ const links=[{href:"/apply",label:"Apply Now",icon:Mail},{href:"/about",label:"About Website",icon:Info},{href:"/disclaimer",label:"Disclaimer",icon:FileText},{href:"/terms",label:"Terms & Conditions",icon:ShieldCheck}];
  return <header className="sticky top-0 z-50 border-b border-forest-700/10 bg-white/95 backdrop-blur-xl">
   <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
    <Link href="/" className="flex items-center gap-3" onClick={()=>setOpen(false)}>
@@ -40,6 +41,7 @@ export default function Header({logoUrl}:{logoUrl?:string}){
        <button type="button" disabled={signingOut} onClick={()=>{void signOut()}} className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-bold text-forest-800 transition hover:bg-forest-50 disabled:opacity-50"><LogOut size={18}/>{signingOut?"Signing Out...":"Sign Out"}</button>
        {signOutError&&<p role="alert" className="px-3 pb-2 text-xs text-red-700">{signOutError}</p>}
      </>:links.map((l,i)=><Link key={l.href} href={l.href} onClick={()=>setOpen(false)} className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-base font-bold transition hover:bg-forest-50 ${i===0?"mb-1 bg-forest-50 text-forest-800 hover:bg-forest-100":"text-slate-700"}`}><l.icon size={18}/>{l.label}</Link>)}
+     {instagram&&<a href={instagram} target="_blank" rel="noopener noreferrer" onClick={()=>setOpen(false)} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-base font-bold text-[#b92a78] transition hover:bg-pink-50"><Instagram size={18}/>Instagram</a>}
     </nav></>}
    </div>
   </div>
